@@ -52,6 +52,28 @@ public static class EncryptedLogReader
         return true;
     }
 
+    public static string EncryptLine(ReadOnlySpan<byte> dek, string plaintext)
+    {
+        if (dek.Length != KeySize)
+        {
+            throw new ArgumentException($"DEK must be {KeySize} bytes.", nameof(dek));
+        }
+
+        var nonce = new byte[NonceSize];
+        RandomNumberGenerator.Fill(nonce);
+        var plainBytes = System.Text.Encoding.UTF8.GetBytes(plaintext);
+        var cipherBytes = new byte[plainBytes.Length];
+        var tag = new byte[TagSize];
+        using var aes = new AesGcm(dek, TagSize);
+        aes.Encrypt(nonce, plainBytes, cipherBytes, tag);
+
+        var payload = new byte[NonceSize + cipherBytes.Length + TagSize];
+        nonce.CopyTo(payload.AsSpan(0, NonceSize));
+        cipherBytes.CopyTo(payload.AsSpan(NonceSize, cipherBytes.Length));
+        tag.CopyTo(payload.AsSpan(NonceSize + cipherBytes.Length, TagSize));
+        return LinePrefix + Convert.ToBase64String(payload);
+    }
+
     public static byte[] LoadDekFromFile(string path)
     {
         var bytes = File.ReadAllBytes(path);

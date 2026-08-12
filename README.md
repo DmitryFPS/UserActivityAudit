@@ -11,6 +11,15 @@ Docker и сервер **не требуются**. Подробно: [docs/STAN
 
 ## Быстрый старт
 
+### Production-пакет (IT)
+
+```powershell
+.\installer\build-dist.ps1
+# dist\UserActivityAudit-*-win-x64.zip → msiexec /quiet
+```
+
+См. [docs/PRODUCTION.md](docs/PRODUCTION.md).
+
 ### Агент (администратор)
 
 ```powershell
@@ -30,7 +39,11 @@ dotnet run --project admin/UserAudit.Dashboard -c Release
 
 | Документ | Описание |
 |----------|----------|
+| [docs/InstallGuide.md](docs/InstallGuide.md) | Установка (production) |
+| [docs/AdminGuide.md](docs/AdminGuide.md) | Администрирование, Dashboard |
+| [docs/SecurityModel.md](docs/SecurityModel.md) | Модель безопасности |
 | [docs/STANDALONE.md](docs/STANDALONE.md) | **Основной режим** — без сервера |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | deploy.ps1, MSI, GPO |
 | [docs/SETUP.md](docs/SETUP.md) | Установка, `--decrypt`, служба |
 | [docs/BUILD.md](docs/BUILD.md) | Сборка native |
 | [ANALYTICS.md](ANALYTICS.md) | Полная спецификация (включая опциональный server) |

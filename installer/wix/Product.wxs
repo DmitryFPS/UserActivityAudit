@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    Каркас MSI для фазы 9. Сборка:
+      1. Собрать native Release + publish Dashboard (self-contained опционально)
+      2. candle -dSourceDir=..\..\build\dist Product.wxs
+      3. light -out UserAuditSetup.msi Product.wixobj
+
+    Требуется WiX Toolset v3.11+ на машине сборки.
+  -->
+  <Product Id="*"
+           Name="UserActivityAudit Agent"
+           Language="1049"
+           Version="1.0.0.0"
+           Manufacturer="UserActivityAudit"
+           UpgradeCode="7E4A9B12-3C5D-4F6E-9A1B-2D8E7F0C4B6A">
+    <Package InstallerVersion="500"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Platform="x64"
+             Description="User activity audit agent"
+             Comments="UserActivityAudit deployment package" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of UserActivityAudit is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="UserActivityAudit" Level="1">
+      <ComponentGroupRef Id="AgentBinaries" />
+      <ComponentGroupRef Id="ProgramDataLayout" />
+    </Feature>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="UserAudit" />
+      </Directory>
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="AUDITDATA" Name="UserAudit">
+          <Directory Id="AUDITLOGS" Name="logs" />
+          <Directory Id="AUDITKEYS" Name="keys" />
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <ComponentGroup Id="AgentBinaries" Directory="INSTALLFOLDER">
+      <Component Id="UserAuditExe" Guid="A1B2C3D4-E5F6-7890-ABCD-EF1234567890" Win64="yes">
+        <File Id="UserAuditExeFile" Source="$(var.SourceDir)\UserAudit.exe" KeyPath="yes" />
+        <ServiceInstall Id="UserAuditServiceInstall"
+                        Type="ownProcess"
+                        Name="UserAuditSvc"
+                        DisplayName="User Activity Audit Service"
+                        Description="Commercial user activity audit agent (UserActivityAudit)."
+                        Start="auto"
+                        Account="LocalSystem"
+                        ErrorControl="normal" />
+        <ServiceControl Id="UserAuditServiceControl"
+                        Name="UserAuditSvc"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall" />
+      </Component>
+      <Component Id="WatchdogExe" Guid="B2C3D4E5-F6A7-8901-BCDE-F12345678901" Win64="yes">
+        <File Id="WatchdogExeFile" Source="$(var.SourceDir)\UserAuditWatchdog.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="AdminExe" Guid="C3D4E5F6-A7B8-9012-CDEF-123456789012" Win64="yes">
+        <File Id="AdminExeFile" Source="$(var.SourceDir)\UserAuditAdmin.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="ProgramDataLayout" Directory="AUDITDATA">
+      <Component Id="ConfigJson" Guid="D4E5F6A7-B8C9-0123-DEF0-234567890123" Win64="yes">
+        <File Id="ConfigJsonFile"
+              Source="$(var.SourceDir)\config.example.json"
+              Name="config.json"
+              KeyPath="yes" />
+        <CreateFolder Directory="AUDITLOGS" />
+        <CreateFolder Directory="AUDITKEYS" />
+      </Component>
+    </ComponentGroup>
+
+    <CustomAction Id="RunDeploySmoke"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLFOLDER]deploy.ps1&quot; -SkipBuild -SkipSmoke"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+  </Product>
+</Wix>

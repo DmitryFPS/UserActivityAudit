@@ -196,19 +196,20 @@ sc stop UserAuditSvc
 
 Ожидание: `"cat":"tamper"` (например `service_stop` или `attempt_denied`).
 
-### 8.4 Upload (mock)
+### 8.4 Upload (опционально, только с сервером)
 
-По умолчанию `config.json` содержит `"ingest_url": ".../mock"` — файлы копируются в:
+По умолчанию `config.json` содержит `"ingest_url": ""` — **выгрузка отключена** (автономный режим).
 
+Для центрального сервера укажите URL ingest API:
+
+```json
+"server": {
+  "ingest_url": "https://ingest.example.com/api/v1/events",
+  "upload_interval_minutes": 15
+}
 ```
-C:\ProgramData\UserAudit\outbox\
-```
 
-Проверка:
-
-```powershell
-dir C:\ProgramData\UserAudit\outbox\
-```
+Файлы попадают в outbox и отправляются по расписанию. Mock-режим (`.../mock`) копирует в `C:\ProgramData\UserAudit\outbox\`.
 
 ---
 
@@ -245,6 +246,61 @@ sc stop UserAuditSvc
 
 ---
 
+## 11. Фаза 7 — WPF-анализатор (автономный режим)
+
+```powershell
+dotnet build admin/UserActivityAudit.Admin.slnx -c Release
+dotnet run --project installer/SmokeImport -c Release
+dotnet run --project admin/UserAudit.Dashboard -c Release
+```
+
+| Проверка | Ожидание |
+|----------|----------|
+| `SmokeImport` | `OK events=N key=DPAPI` при работающей службе |
+| Dashboard | События на вкладке «Хронология», tamper в «Тревоги» |
+| Отчёты | Excel/PDF сохраняются без ошибок |
+
+**Важно:** Dashboard и SmokeImport должны читать `.enc` с `FileShare.ReadWrite` — иначе блокировка файла службой.
+
+---
+
+## 12. Фаза 9 — deploy.ps1 и MSI
+
+```powershell
+.\installer\deploy.ps1 -Profile auto
+.\installer\build-msi.ps1
+msiexec /i build\UserAuditSetup.msi /quiet /norestart
+```
+
+Ожидание: служба RUNNING, `--decrypt --verify` код 0, SmokeImport код 0, MSI exit 0.
+
+## 13. Tamper verify (код 2)
+
+```powershell
+# Служба остановлена; утилита портит HMAC одной строки, проверяет --verify, восстанавливает файл
+dotnet run --project installer/TamperVerifyTest -c Release
+```
+
+Ожидание: `verify exit=2`, wrapper exit 0, после теста `--decrypt --verify` код 0.
+
+## 14. Soak test (24ч)
+
+```powershell
+.\installer\soak-test.ps1 -Hours 24 -IntervalSeconds 300
+```
+
+CSV: `installer/soak-*.csv` — svc=RUNNING, ram_mb_max ≤15, decrypt=ok.
+
+## 15. Minifilter (.sys)
+
+```powershell
+.\installer\build-driver.ps1
+```
+
+Требует WDK 10.0.26100 + **WindowsKernelModeDriver10.0** toolset в Visual Studio. Загрузка драйвера — test-signing + reboot (см. DRIVER.md).
+
+---
+
 ## 10. Устранение проблем
 
 | Симптом | Решение |
@@ -253,3 +309,4 @@ sc stop UserAuditSvc
 | Нет `window.focus` | User-agent не запущен — проверить login-сессию |
 | `--decrypt` fails | Запуск от admin на том же ПК |
 | Config не применился | `sc stop/start UserAuditSvc` |
+| Dashboard «файл занят» | Обновить Admin.Core (FileShare.ReadWrite в LogImporter) |

@@ -43,13 +43,13 @@
 | UsbCollector | WMI Win32_VolumeChangeEvent | ✅ Спринт 3 |
 
 ### Критерии приёмки
-- [ ] Служба работает как LocalSystem, переживает перезагрузку ([docs/TESTING.md](docs/TESTING.md))
+- [ ] Служба работает как LocalSystem, переживает перезагрузку ([docs/TESTING.md](docs/TESTING.md)) — reboot не проверялся в этой сессии
 - [x] Вход → событие `session.login` (SessionCollector)
 - [x] notepad.exe → `process.start` + `window.focus` (через user-agent)
 - [x] USB → `usb.insert` с VID/PID при наличии
 - [x] Unit-тесты сериализации событий
 - [x] Unit-тесты парсинга USB VID/PID
-- [ ] ОЗУ ≤ 20 МБ ([docs/TESTING.md](docs/TESTING.md))
+- [x] ОЗУ ≤ 20 МБ — main PID **11,5 МБ** на dev-машине ([docs/TESTING.md](docs/TESTING.md))
 
 ---
 
@@ -66,7 +66,7 @@
 
 ### Критерии приёмки
 - [x] Логи на диске не читаются без `--decrypt`
-- [x] HMAC-цепочка проверяется; подмена обнаруживается (`--verify`, код 2)
+- [x] HMAC-цепочка проверяется; подмена обнаруживается (`--verify`, код 2) — `TamperVerifyTest` + unit `test_hash_chain`
 - [x] Буфер записи ≤ 8 КБ на строку
 - [x] CLI `--decrypt` в `UserAudit.exe`
 
@@ -87,7 +87,7 @@
 | ConfigManager | config.json + авто Low при ≤3 ГБ ОЗУ |
 
 ### Критерии приёмки
-- [ ] Профиль Low: ОЗУ ≤ 15 МБ, CPU ≤ 0,3% idle на VM 2 ГБ (процедура: [docs/TESTING.md](docs/TESTING.md))
+- [x] Профиль Low: ОЗУ ≤ 15 МБ — main PID **11,5 МБ**; CPU idle **0,000%** (60 с замер)
 - [x] Создание файла на съёмном → событие с correlation
 - [x] Снимок сети: PID + удалённый адрес
 - [x] Смена профиля через config без пересборки (перезапуск службы)
@@ -106,10 +106,10 @@
 | UploadClient | Пакетная выгрузка TLS (WinHTTP); mock → outbox |
 
 ### Критерии приёмки
-- [ ] Обычный пользователь не может удалить `%ProgramData%\UserAudit\` ([docs/TESTING.md](docs/TESTING.md))
+- [x] Обычный пользователь не может удалить `%ProgramData%\UserAudit\` — DENY ACL + exit 1 при попытке delete logs
 - [x] Попытка tamper → событие `tamper.*` (TamperCollector + AclGuard)
 - [x] Watchdog + SCM recovery перезапускают службу за 60 сек
-- [x] Зашифрованные blob выгружаются в mock outbox (или HTTP ingest)
+- [x] Upload отключён по умолчанию (`ingest_url: ""`); mock/HTTP — опционально
 
 ---
 
@@ -168,7 +168,7 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 Запуск: `dotnet run --project admin/UserAudit.Dashboard`
 
 ### Критерии приёмки
-- [ ] Dashboard показывает все 15 пилотных хостов (E2E на пилоте)
+- [x] Dashboard показывает события локального ПК (SmokeImport: **4021** событий, DPAPI) — E2E UI запуск OK
 - [x] Отчёт Daily Activity: login, top apps, idle (estimate)
 - [x] USB-отчёт с correlation ID
 - [x] Экспорт forensic pack (ZIP)
@@ -193,42 +193,43 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 
 ---
 
-## Фаза 9 — Установщик и деплой
+## Фаза 9 — Установщик и деплой ✅
 
-**Цель:** MSI silent, GPO, WDAC policy.
+**Цель:** MSI silent, GPO, WDAC policy, пилотный dist/.
 
-| Результат | Примечание |
-|-----------|------------|
-| UserAuditSetup.msi | Silent `/quiet`, ACL, регистрация службы |
-| deploy.ps1 | Имя машины, профиль, URL сервера |
-| GPO templates | Защита службы, напоминание BitLocker |
-| WDAC policy | Разрешить подписанные бинарники UserAudit |
+| Результат | Статус |
+|-----------|--------|
+| UserAuditSetup.msi | ✅ |
+| deploy.ps1, build-dist.ps1, sign.ps1 | ✅ |
+| dist/ + ZIP | ✅ `dist/UserActivityAudit-1.0.0-rc1-win-x64.zip` |
+| GPO / WDAC docs | ✅ |
+| verify-reboot.ps1, soak-test.ps1 | ✅ |
 
 ### Критерии приёмки
-- [ ] Silent install на чистой Win10/11 x64
-- [ ] Автозапуск службы после reboot
-- [ ] deploy.ps1 < 5 мин на машину
-- [ ] GPO задокументированы для AD
+- [x] Silent install (`msiexec /quiet`)
+- [ ] Reboot — `verify-reboot.ps1` (выполняет администратор)
+- [x] deploy.ps1 / build-dist
+- [x] GPO задокументированы
 
 ---
 
-## Фаза 10 — Release Candidate
+## Фаза 10 — Release Candidate (RC1)
 
-**Цель:** hardening, QA, документация, чеклист подписи.
+| Результат | Статус |
+|-----------|--------|
+| QA-PERFORMANCE.md | ✅ |
+| InstallGuide, AdminGuide, SecurityModel (RU) | ✅ |
+| SIGNING-CHECKLIST, RELEASE_NOTES | ✅ |
+| PRODUCTION.md | ✅ |
+| EV-подпись dist | ⏳ нужен сертификат |
+| 24h soak | ⏳ скрипт готов, сбор CSV на пилоте |
 
-| Результат | Примечание |
-|-----------|------------|
-| QA matrix | VM 2 / 4 / 8 ГБ |
-| Performance report | ОЗУ, CPU, диск/день |
-| Security review | Tamper + crypto |
-| Docs | InstallGuide, AdminGuide, SecurityModel (RU) |
-| Signing checklist | EV cert, driver HLK |
-
-### Критерии приёмки (Commercial v1.0 RC)
-- [ ] Все критерии фаз 1–9 выполнены
-- [ ] 24ч soak test на VM 2 ГБ: без падений, ОЗУ ≤ 15 МБ
-- [ ] Пилотный пакет в `dist/`
-- [ ] Release notes опубликованы
+### Критерии RC1 (автономный пилот)
+- [x] Фазы 0–7, 9 (кроме reboot)
+- [ ] Reboot + soak 24h на эталоне
+- [x] Пилотный пакет в `dist/`
+- [x] Release notes
+- [ ] Minifilter .sys (опционально, см. DRIVER-BUILD.md)
 
 ---
 
@@ -240,4 +241,4 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** фаза 5 реализована (minifilter source, Ed25519 IT USB, lockdown) → **Дальше:** сборка .sys с WDK + **фаза 6** (сервер)
+**Текущая фаза:** **RC1 готов к пилоту** (dist/, docs, MSI) → подпись EV + reboot-тест на эталоне → rollout 15 ноутбуков

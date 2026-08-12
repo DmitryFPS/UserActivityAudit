@@ -20,6 +20,14 @@ Minifilter защищает `%ProgramData%\\UserAudit\\` от delete/rename; в 
 
 CMake-таргет `UserAuditFilter` включается только при `USERAUDIT_BUILD_DRIVER=ON` и наличии WDK.
 
+Сборка `.sys` (Release x64):
+
+```powershell
+.\installer\build-driver.ps1
+```
+
+Требует WDK 10.0.26100+ **и** toolset `WindowsKernelModeDriver10.0` в Visual Studio (компонент «Windows Driver Kit» в VS Installer). Если MSB8020 — доустановите WDK integration в Visual Studio Build Tools.
+
 ## Test-signing (dev)
 
 ```powershell

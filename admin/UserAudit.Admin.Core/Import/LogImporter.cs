@@ -28,7 +28,9 @@ public sealed class LogImporter
     public IReadOnlyList<AuditEventModel> ImportFile(string filePath, ReadOnlySpan<byte> dek)
     {
         var events = new List<AuditEventModel>();
-        foreach (var line in File.ReadLines(filePath))
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        while (reader.ReadLine() is { } line)
         {
             if (string.IsNullOrWhiteSpace(line))
             {
