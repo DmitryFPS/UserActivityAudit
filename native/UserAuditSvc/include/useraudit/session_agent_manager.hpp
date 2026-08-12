@@ -22,6 +22,7 @@ public:
     SessionAgentManager& operator=(const SessionAgentManager&) = delete;
 
     void set_dev_mode(bool dev_mode) { dev_mode_ = dev_mode; }
+    void set_agent_options(int window_poll_sec, bool enable_clipboard);
 
     bool start();
     void stop();
@@ -45,6 +46,8 @@ private:
     unsigned long find_session_for_user(const std::string& domain_user) const;
 
     bool dev_mode_ = false;
+    int window_poll_sec_ = 3;
+    bool enable_clipboard_ = false;
     std::mutex mutex_;
     std::unordered_map<unsigned long, AgentRecord> agents_;
     std::thread watchdog_thread_;

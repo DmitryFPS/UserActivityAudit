@@ -40,6 +40,11 @@ bool is_user_session(unsigned long session_id) {
 
 SessionAgentManager::SessionAgentManager() = default;
 
+void SessionAgentManager::set_agent_options(int window_poll_sec, bool enable_clipboard) {
+    window_poll_sec_ = window_poll_sec > 0 ? window_poll_sec : 3;
+    enable_clipboard_ = enable_clipboard;
+}
+
 SessionAgentManager::~SessionAgentManager() {
     stop();
 }
@@ -247,6 +252,11 @@ bool SessionAgentManager::launch_agent(unsigned long session_id, HANDLE& out_pro
     command_line += exe_path;
     command_line += L"\" --user-agent --session-id ";
     command_line += std::to_wstring(session_id);
+    command_line += L" --window-poll-sec ";
+    command_line += std::to_wstring(window_poll_sec_);
+    if (enable_clipboard_) {
+        command_line += L" --enable-clipboard";
+    }
     std::vector<wchar_t> command_buffer(command_line.begin(), command_line.end());
     command_buffer.push_back(L'\0');
 

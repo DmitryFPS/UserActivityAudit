@@ -1,5 +1,6 @@
 #pragma once
 
+#include "useraudit/correlation_tracker.hpp"
 #include "useraudit/event_sink.hpp"
 
 #include <atomic>
@@ -18,6 +19,8 @@ public:
 
     void set_stop_flag(volatile bool* flag) { stop_flag_ = flag; }
 
+    void set_correlation_tracker(CorrelationTracker* tracker) { correlation_ = tracker; }
+
     bool start();
     void stop();
 
@@ -26,6 +29,7 @@ private:
 
     EventSink& writer_;
     std::string hostname_;
+    CorrelationTracker* correlation_ = nullptr;
     std::thread wmi_thread_;
     volatile bool* stop_flag_ = nullptr;
     std::atomic<bool> running_{false};

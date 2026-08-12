@@ -109,18 +109,45 @@ C:\ProgramData\UserAudit\keys\chain.state            ← номер цепочк
 
 ---
 
-## 4. Unit-тесты
+## 6. Конфигурация (фаза 3)
+
+Файл: `C:\ProgramData\UserAudit\config.json`
+
+| Поле | Значение |
+|------|----------|
+| `profile` | `auto` / `low` / `standard` / `full` |
+| `collectors.*` | Включение модулей (file, network, clipboard, print…) |
+| `paths.critical` | Пути для FileCollector (`%USERPROFILE%\\Documents` и т.д.) |
+| `storage.max_log_mb_per_day` | Лимит размера лога в день |
+
+При `profile: auto` и ОЗУ ≤ 3 ГБ выбирается **Low** (реже опрос, меньше логов).
+
+После изменения config — перезапуск службы:
 
 ```powershell
-cmake --build build/native --config Debug --target test_event_serializer test_log_crypto test_hash_chain
-.\build\native\tests\Debug\test_event_serializer.exe
-.\build\native\tests\Debug\test_log_crypto.exe
-.\build\native\tests\Debug\test_hash_chain.exe
+sc stop UserAuditSvc
+sc start UserAuditSvc
 ```
+
+Пример конфига — `installer/config.example.json`. Процедуры тестирования — [TESTING.md](TESTING.md).
 
 ---
 
-## 5. Удаление (только dev)
+## 7. Unit-тесты
+
+```powershell
+cmake --build build/native --config Debug --target test_event_serializer test_log_crypto test_hash_chain test_config_manager
+.\build\native\tests\Debug\test_event_serializer.exe
+.\build\native\tests\Debug\test_log_crypto.exe
+.\build\native\tests\Debug\test_hash_chain.exe
+.\build\native\tests\Debug\test_config_manager.exe
+```
+
+Или все сразу: `ctest --test-dir build/native -C Debug`
+
+---
+
+## 8. Удаление (только dev)
 
 ```powershell
 .\UserAudit.exe --uninstall

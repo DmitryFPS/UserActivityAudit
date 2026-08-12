@@ -12,6 +12,9 @@ std::filesystem::path resolve_log_directory();
 // Key material: %ProgramData%\UserAudit\keys
 std::filesystem::path resolve_keys_directory();
 
+// Agent config: %ProgramData%\UserAudit\config.json
+std::filesystem::path resolve_config_path();
+
 // Hash chain state: %ProgramData%\UserAudit\keys\chain.state
 std::filesystem::path resolve_chain_state_path();
 

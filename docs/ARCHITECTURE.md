@@ -82,9 +82,10 @@ UserActivityAudit/
 ## Конвейер событий (клиент)
 
 ```
-Сборщики → EventQueue (кольцевой буфер) → Serializer → EncryptedLogWriter → Диск
-                ↓
-           AlertEngine (локальные правила) → UploadClient → Сервер
+Сборщики → Serializer → EncryptedLogWriter → Диск
+  L1: session, process, usb, window (user-agent)
+  L2: file, network, print (+ clipboard в user-agent, opt-in)
+  ConfigManager: %ProgramData%\\UserAudit\\config.json
 ```
 
 ---

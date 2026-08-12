@@ -63,3 +63,21 @@ if(MSVC)
 endif()
 
 add_test(NAME test_hash_chain COMMAND test_hash_chain)
+
+add_executable(test_config_manager
+    test_config_manager.cpp
+    ../UserAuditSvc/src/config_manager.cpp
+    ../UserAuditSvc/src/paths.cpp
+)
+
+target_include_directories(test_config_manager PRIVATE
+    ../UserAuditSvc/include
+)
+
+target_link_libraries(test_config_manager PRIVATE Ole32 Shell32)
+
+if(MSVC)
+    target_compile_options(test_config_manager PRIVATE /W4 /permissive-)
+endif()
+
+add_test(NAME test_config_manager COMMAND test_config_manager)

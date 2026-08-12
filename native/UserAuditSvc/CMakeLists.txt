@@ -11,6 +11,12 @@ add_executable(UserAudit
     src/log_crypto.cpp
     src/encrypted_log_writer.cpp
     src/decrypt_tool.cpp
+    src/config_manager.cpp
+    src/correlation_tracker.cpp
+    src/file_collector.cpp
+    src/network_collector.cpp
+    src/print_collector.cpp
+    src/clipboard_collector.cpp
     src/paths.cpp
     src/session_collector.cpp
     src/process_collector.cpp
@@ -51,6 +57,8 @@ target_link_libraries(UserAudit PRIVATE
     wevtapi
     rpcrt4
     tdh
+    iphlpapi
+    ws2_32
 )
 
 if(MSVC)

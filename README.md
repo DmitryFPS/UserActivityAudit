@@ -17,6 +17,7 @@
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Архитектура системы |
 | [docs/BUILD.md](docs/BUILD.md) | Сборка |
 | [docs/SETUP.md](docs/SETUP.md) | Установка, служба, расшифровка логов |
+| [docs/TESTING.md](docs/TESTING.md) | Тестирование, reboot, RAM, чеклисты |
 
 ## Сборка (фаза 0+)
 

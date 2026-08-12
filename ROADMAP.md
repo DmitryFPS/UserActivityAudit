@@ -41,13 +41,13 @@
 | UsbCollector | WMI Win32_VolumeChangeEvent | ✅ Спринт 3 |
 
 ### Критерии приёмки
-- [ ] Служба работает как LocalSystem, переживает перезагрузку
+- [ ] Служба работает как LocalSystem, переживает перезагрузку ([docs/TESTING.md](docs/TESTING.md))
 - [x] Вход → событие `session.login` (SessionCollector)
 - [x] notepad.exe → `process.start` + `window.focus` (через user-agent)
 - [x] USB → `usb.insert` с VID/PID при наличии
 - [x] Unit-тесты сериализации событий
 - [x] Unit-тесты парсинга USB VID/PID
-- [ ] ОЗУ ≤ 20 МБ (до шифрования)
+- [ ] ОЗУ ≤ 20 МБ ([docs/TESTING.md](docs/TESTING.md))
 
 ---
 
@@ -72,23 +72,23 @@
 
 ---
 
-## Фаза 3 — L2 и профили
+## Фаза 3 — L2 и профили ✅
 
 **Цель:** модули с периодическим опросом + профили Low/Standard/Full.
 
 | Модуль | Примечание |
 |--------|------------|
-| FileCollector | Уровни путей, съёмные диски |
+| FileCollector | Уровни путей, съёмные диски, correlation с USB |
 | NetworkCollector | GetExtendedTcpTable, 30–60 сек |
-| ClipboardCollector | Только хеш, opt-in |
+| ClipboardCollector | Только хеш, opt-in (user-agent) |
 | PrintCollector | Operational log PrintService |
 | ConfigManager | config.json + авто Low при ≤3 ГБ ОЗУ |
 
 ### Критерии приёмки
-- [ ] Профиль Low: ОЗУ ≤ 15 МБ, CPU ≤ 0,3% idle на VM 2 ГБ
-- [ ] Создание файла на съёмном → событие с correlation
-- [ ] Снимок сети: PID + удалённый адрес
-- [ ] Смена профиля через config без пересборки
+- [ ] Профиль Low: ОЗУ ≤ 15 МБ, CPU ≤ 0,3% idle на VM 2 ГБ (процедура: [docs/TESTING.md](docs/TESTING.md))
+- [x] Создание файла на съёмном → событие с correlation
+- [x] Снимок сети: PID + удалённый адрес
+- [x] Смена профиля через config без пересборки (перезапуск службы)
 
 ---
 
@@ -234,4 +234,4 @@
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** фаза 2 завершена (шифрование и хранение) → **Дальше: фаза 3** (L2 и профили, по команде)
+**Текущая фаза:** фаза 3 реализована (L2 + профили) → **Дальше:** добить замеры RAM/reboot на VM, затем **фаза 4** (по команде)

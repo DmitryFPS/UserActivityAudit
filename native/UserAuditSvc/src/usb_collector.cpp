@@ -294,6 +294,12 @@ void UsbCollector::wmi_thread_main() {
                     }
                 }
 
+                if (event_type == kVolumeArrival && correlation_ != nullptr) {
+                    event.corr = correlation_->on_usb_insert(wide_to_utf8(drive_name));
+                } else if (event_type == kVolumeRemoval && correlation_ != nullptr) {
+                    correlation_->on_usb_remove(wide_to_utf8(drive_name));
+                }
+
                 writer_.write(event);
             }
         }
