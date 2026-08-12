@@ -11,6 +11,8 @@ add_executable(UserAudit
     src/pipe_server.cpp
     src/pipe_client.cpp
     src/session_agent_manager.cpp
+    src/usb_collector.cpp
+    src/usb_helpers.cpp
     src/user_agent_mode.cpp
     src/time_utils.cpp
 )

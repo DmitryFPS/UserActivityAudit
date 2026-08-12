@@ -6,6 +6,7 @@
 #include "useraudit/process_collector.hpp"
 #include "useraudit/session_agent_manager.hpp"
 #include "useraudit/session_collector.hpp"
+#include "useraudit/usb_collector.hpp"
 
 #include <windows.h>
 
@@ -36,9 +37,11 @@ void run_event_loop(volatile bool& stop_requested) {
 
     SessionCollector session_collector(writer, hostname);
     ProcessCollector process_collector(writer, hostname);
+    UsbCollector usb_collector(writer, hostname);
 
     session_collector.set_stop_flag(&stop_requested);
     process_collector.set_stop_flag(&stop_requested);
+    usb_collector.set_stop_flag(&stop_requested);
     session_collector.set_session_observer(
         [&session_agents](const std::string& action, const std::string& user) {
             session_agents.on_session_event(action, user);
@@ -56,11 +59,16 @@ void run_event_loop(volatile bool& stop_requested) {
         OutputDebugStringW(L"[UserAuditSvc] ProcessCollector failed to start\n");
     }
 
+    if (!usb_collector.start()) {
+        OutputDebugStringW(L"[UserAuditSvc] UsbCollector failed to start\n");
+    }
+
     while (!stop_requested) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     process_collector.stop();
+    usb_collector.stop();
     session_collector.stop();
     session_agents.stop();
     pipe_server.stop();

@@ -38,14 +38,15 @@ Commercial Production v1.0. Pilot fleet: 15 laptops.
 | EventWriter (JSONL) | Plaintext JSONL | ✅ Sprint 1 |
 | ProcessCollector | ETW Microsoft-Windows-Kernel-Process | ✅ Sprint 2 |
 | ForegroundCollector | Same binary, `--user-agent` in user session → pipe | ✅ Sprint 2b |
-| UsbCollector | WMI Win32_VolumeChangeEvent | Sprint 3 |
+| UsbCollector | WMI Win32_VolumeChangeEvent | ✅ Sprint 3 |
 
 ### Acceptance criteria
 - [ ] Service runs as LocalSystem, survives reboot
 - [x] Login event → JSONL `session.login` (SessionCollector)
 - [x] notepad.exe → `process.start` + `window.focus` (via UserAuditUser)
-- [ ] USB insert → `usb.insert`
+- [x] USB insert → `usb.insert` with VID/PID when available
 - [x] Unit tests for event serialization
+- [x] Unit tests for USB VID/PID parsing
 - [ ] RAM ≤ 20 MB (pre-crypto)
 
 ---
@@ -231,4 +232,4 @@ Each phase may split into 2–4 sprints. After each sprint:
 2. ROADMAP checkboxes updated
 3. Brief summary: done / next
 
-**Current phase:** Phase 1 (Sprint 2b done) → **Next: Phase 1 Sprint 3** (UsbCollector, on command)
+**Current phase:** Phase 1 complete (collectors) → **Next: Phase 2** (Crypto & storage, on command)
