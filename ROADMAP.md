@@ -152,22 +152,24 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 
 ---
 
-## Фаза 7 — Админ-пакет (C#)
+## Фаза 7 — Админ-пакет (C#) ✅
 
 **Цель:** WPF-дашборд, отчёты, расшифровка, forensic import.
 
-| Модуль | Примечание |
-|--------|------------|
-| LogImporter | Зашифрованный JSONL → domain models |
-| Dashboard | Timeline, хосты, alerts (WPF) |
-| Reports | Excel/PDF (паттерны UsbForensicAudit) |
-| DecryptTool | Escrow + локальный unwrap |
+| Модуль | Примечание | Статус |
+|--------|------------|--------|
+| LogImporter | Зашифрованный JSONL → domain models | ✅ |
+| Dashboard | Timeline, хосты, alerts (WPF) | ✅ |
+| Reports | Excel/PDF (ClosedXML + QuestPDF) | ✅ |
+| DecryptTool | Escrow + локальный DEK | ✅ |
+
+Запуск: `dotnet run --project admin/UserAudit.Dashboard`
 
 ### Критерии приёмки
-- [ ] Dashboard показывает все 15 пилотных хостов
-- [ ] Отчёт Daily Activity: login, top apps, idle
-- [ ] USB-отчёт с correlation ID
-- [ ] Экспорт forensic pack (ZIP)
+- [ ] Dashboard показывает все 15 пилотных хостов (E2E на пилоте)
+- [x] Отчёт Daily Activity: login, top apps, idle (estimate)
+- [x] USB-отчёт с correlation ID
+- [x] Экспорт forensic pack (ZIP)
 
 ---
 

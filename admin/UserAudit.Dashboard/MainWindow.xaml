@@ -1,0 +1,155 @@
+﻿<Window x:Class="UserAudit.Dashboard.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UserActivityAudit — Admin Dashboard"
+        Height="720" Width="1100"
+        MinHeight="600" MinWidth="900">
+    <DockPanel Margin="8">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Import encrypted logs..." Click="ImportLogs_Click"/>
+                <MenuItem Header="Export forensic pack (ZIP)..." Click="ExportForensicPack_Click"/>
+                <Separator/>
+                <MenuItem Header="Exit" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="Server">
+                <MenuItem Header="Refresh from server" Click="RefreshServer_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <Expander DockPanel.Dock="Top" Header="Connection settings" IsExpanded="False" Margin="0,0,0,8">
+            <Grid Margin="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Portal URL" VerticalAlignment="Center"/>
+                <TextBox x:Name="PortalUrlBox" Grid.Row="0" Grid.Column="1" Margin="4"/>
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="Ingest URL" VerticalAlignment="Center"/>
+                <TextBox x:Name="IngestUrlBox" Grid.Row="0" Grid.Column="3" Margin="4"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Escrow URL" VerticalAlignment="Center"/>
+                <TextBox x:Name="EscrowUrlBox" Grid.Row="1" Grid.Column="1" Margin="4"/>
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="Alerts URL" VerticalAlignment="Center"/>
+                <TextBox x:Name="AlertsUrlBox" Grid.Row="1" Grid.Column="3" Margin="4"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Admin API key" VerticalAlignment="Center"/>
+                <TextBox x:Name="AdminKeyBox" Grid.Row="2" Grid.Column="1" Margin="4"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="DEK file (32 bytes)" VerticalAlignment="Center"/>
+                <DockPanel Grid.Row="2" Grid.Column="3" Margin="4">
+                    <Button Content="..." DockPanel.Dock="Right" Width="32" Click="BrowseDek_Click"/>
+                    <TextBox x:Name="DekPathBox"/>
+                </DockPanel>
+            </Grid>
+        </Expander>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="Ready"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <TabControl>
+            <TabItem Header="Dashboard">
+                <StackPanel Margin="12">
+                    <WrapPanel>
+                        <Border Margin="0,0,12,12" Padding="16" BorderBrush="#CCC" BorderThickness="1" MinWidth="180">
+                            <StackPanel>
+                                <TextBlock Text="Hosts (server)" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="HostCountText" FontSize="28"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Margin="0,0,12,12" Padding="16" BorderBrush="#CCC" BorderThickness="1" MinWidth="180">
+                            <StackPanel>
+                                <TextBlock Text="Open alerts" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="AlertCountText" FontSize="28"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Margin="0,0,12,12" Padding="16" BorderBrush="#CCC" BorderThickness="1" MinWidth="180">
+                            <StackPanel>
+                                <TextBlock Text="Local imported events" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="LocalEventCountText" FontSize="28"/>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                    <Button Content="Refresh from server" Width="180" HorizontalAlignment="Left" Click="RefreshServer_Click"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Timeline">
+                <DataGrid x:Name="TimelineGrid" IsReadOnly="True" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Time (UTC)" Binding="{Binding TimestampUtc}" Width="160"/>
+                        <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="120"/>
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="100"/>
+                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="120"/>
+                        <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Hosts">
+                <DataGrid x:Name="HostsGrid" IsReadOnly="True" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Hostname" Binding="{Binding Hostname}" Width="*"/>
+                        <DataGridTextColumn Header="First seen" Binding="{Binding FirstSeenUtc}" Width="160"/>
+                        <DataGridTextColumn Header="Last seen" Binding="{Binding LastSeenUtc}" Width="160"/>
+                        <DataGridTextColumn Header="Log blobs" Binding="{Binding LogBlobCount}" Width="90"/>
+                        <DataGridTextColumn Header="Open alerts" Binding="{Binding OpenAlertCount}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Alerts">
+                <DataGrid x:Name="AlertsGrid" IsReadOnly="True" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Created" Binding="{Binding CreatedAtUtc}" Width="160"/>
+                        <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="120"/>
+                        <DataGridTextColumn Header="Rule" Binding="{Binding RuleId}" Width="140"/>
+                        <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*"/>
+                        <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Import / Decrypt">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Import encrypted logs from agent (%ProgramData%\UserAudit\logs)" Margin="0,0,0,8"/>
+                    <DockPanel Margin="0,0,0,8">
+                        <Button Content="Browse..." DockPanel.Dock="Right" Width="90" Margin="4,0,0,0" Click="BrowseLogFolder_Click"/>
+                        <TextBox x:Name="LogFolderBox"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,8">
+                        <Button Content="Unwrap DEK (Escrow)" DockPanel.Dock="Right" Width="140" Margin="4,0,0,0" Click="UnwrapDek_Click"/>
+                        <TextBox x:Name="EscrowHostBox" ToolTip="Hostname for escrow unwrap"/>
+                    </DockPanel>
+                    <Button Content="Import logs" Width="140" HorizontalAlignment="Left" Click="ImportLogs_Click"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Reports">
+                <StackPanel Margin="12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Report date:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <DatePicker x:Name="ReportDatePicker"/>
+                    </StackPanel>
+                    <TextBlock Text="Daily Activity" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Button Content="Excel" Width="90" Margin="0,0,8,0" Click="DailyExcel_Click"/>
+                        <Button Content="PDF" Width="90" Click="DailyPdf_Click"/>
+                    </StackPanel>
+                    <TextBlock Text="USB report (correlation ID)" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Excel" Width="90" Margin="0,0,8,0" Click="UsbExcel_Click"/>
+                        <Button Content="PDF" Width="90" Click="UsbPdf_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

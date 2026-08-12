@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="UserAudit.Admin.Core/UserAudit.Admin.Core.csproj" />
+  <Project Path="UserAudit.Dashboard/UserAudit.Dashboard.csproj" />
+</Solution>
