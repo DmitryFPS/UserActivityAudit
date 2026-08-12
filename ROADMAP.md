@@ -111,23 +111,23 @@
 
 ---
 
-## Фаза 5 — Minifilter и IT USB
+## Фаза 5 — Minifilter и IT USB ✅
 
 **Цель:** защита на уровне ядра + криптографическая авторизация админа.
 
 | Модуль | Примечание |
 |--------|------------|
-| UserAudit.sys | Minifilter: запрет delete/rename bin + logs |
-| IoctlGuard | uninstall/stop только с Ed25519 token |
+| UserAudit.sys | Minifilter: запрет delete/rename bin + logs ([docs/DRIVER.md](docs/DRIVER.md)) |
+| IoctlGuard | stop/uninstall только с Ed25519 token (AuthGuard + pipe) |
 | UserAuditAdmin | IT-инструмент: challenge-response, uninstall |
 | UserAuditKeygen | Церемония генерации org key |
-| Lockdown mode | Append-only при детекте tamper |
+| Lockdown mode | Append-only при детекте tamper (DriverClient + LockdownManager) |
 
 ### Критерии приёмки
-- [ ] Локальный admin не удаляет логи при загруженном драйвере
-- [ ] `sc stop` без валидной подписи IT USB — отказ
-- [ ] Церемония uninstall логируется на сервер до удаления
-- [ ] Dev: инструкции test-signing задокументированы
+- [ ] Локальный admin не удаляет логи при загруженном драйвере ([docs/DRIVER.md](docs/DRIVER.md))
+- [x] `sc stop` без валидной подписи IT USB — отказ (AuthGuard)
+- [x] Церемония uninstall через UserAuditAdmin + `--uninstall`
+- [x] Dev: инструкции test-signing в [docs/DRIVER.md](docs/DRIVER.md)
 
 ---
 
@@ -234,4 +234,4 @@
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** фаза 4 реализована (ACL, watchdog, tamper, upload mock) → **Дальше:** ручной QA фаз 1–4 на VM, затем **фаза 5** (minifilter)
+**Текущая фаза:** фаза 5 реализована (minifilter source, Ed25519 IT USB, lockdown) → **Дальше:** сборка .sys с WDK + **фаза 6** (сервер)

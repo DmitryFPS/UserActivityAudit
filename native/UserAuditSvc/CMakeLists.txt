@@ -31,11 +31,19 @@ add_executable(UserAudit
     src/acl_guard.cpp
     src/tamper_collector.cpp
     src/upload_client.cpp
+    src/auth_guard.cpp
+    src/auth_pipe_server.cpp
+    src/driver_client.cpp
+    src/lockdown_manager.cpp
 )
 
 target_include_directories(UserAudit PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../common/ed25519_orlp/src
 )
+
+target_link_libraries(UserAudit PRIVATE UserAuditCommon)
 
 target_compile_definitions(UserAudit PRIVATE
     UNICODE
@@ -63,6 +71,7 @@ target_link_libraries(UserAudit PRIVATE
     iphlpapi
     ws2_32
     winhttp
+    fltlib
 )
 
 if(MSVC)

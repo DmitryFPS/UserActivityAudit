@@ -212,7 +212,40 @@ dir C:\ProgramData\UserAudit\outbox\
 
 ---
 
-## 9. Устранение проблем
+## 9. Фаза 5 — IT USB и minifilter
+
+### 9.1 Генерация org key (offline)
+
+```powershell
+.\UserAuditKeygen.exe --out E:\IT\
+copy E:\IT\org.pub C:\ProgramData\UserAudit\keys\org.pub
+```
+
+`org.key` — только на IT USB.
+
+### 9.2 Остановка службы с IT USB
+
+```powershell
+.\UserAuditAdmin.exe --sign-stop --key E:\IT\org.key
+sc stop UserAuditSvc
+```
+
+Без подписи: `sc stop` **отклоняется** (если `org.pub` развёрнут).
+
+### 9.3 Uninstall
+
+```powershell
+.\UserAuditAdmin.exe --uninstall --key E:\IT\org.key
+.\UserAudit.exe --uninstall
+```
+
+### 9.4 Minifilter
+
+См. [DRIVER.md](DRIVER.md) — сборка `.sys`, test-signing, проверка delete логов.
+
+---
+
+## 10. Устранение проблем
 
 | Симптом | Решение |
 |---------|---------|

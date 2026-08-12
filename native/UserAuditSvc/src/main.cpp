@@ -1,4 +1,5 @@
 #include "useraudit/decrypt_tool.hpp"
+#include "useraudit/auth_guard.hpp"
 #include "useraudit/event_loop.hpp"
 #include "useraudit/service_host.hpp"
 #include "useraudit/user_agent_mode.hpp"
@@ -24,7 +25,7 @@ void print_usage() {
     std::wcerr << L"Usage:\n"
                << L"  UserAudit.exe              Run audit service (or dev console mode)\n"
                << L"  UserAudit.exe --install    Install Windows service (admin)\n"
-               << L"  UserAudit.exe --uninstall  Remove Windows service (admin)\n"
+               << L"  UserAudit.exe --uninstall  Remove Windows service (admin + IT USB auth)\n"
                << L"  UserAudit.exe --decrypt    Decrypt audit logs to stdout\n";
 }
 
@@ -50,6 +51,10 @@ int wmain(int argc, wchar_t** argv) {
             return 0;
         }
         if (arg == L"--uninstall") {
+            if (!useraudit::global_auth_guard().is_authorized(useraudit::AuthAction::Uninstall)) {
+                std::wcerr << L"Uninstall denied. Run UserAuditAdmin.exe --uninstall --key <IT USB>\\org.key\n";
+                return 1;
+            }
             if (!useraudit::uninstall_service(kServiceName)) {
                 return 1;
             }

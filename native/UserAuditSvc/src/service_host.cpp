@@ -1,5 +1,7 @@
 #include "useraudit/service_host.hpp"
 
+#include "useraudit/auth_guard.hpp"
+
 #include <windows.h>
 
 #include <atomic>
@@ -32,6 +34,10 @@ void report_status(DWORD state, DWORD win32_exit_code = NO_ERROR, DWORD wait_hin
 void WINAPI service_control_handler(DWORD control) {
     switch (control) {
         case SERVICE_CONTROL_STOP:
+            if (!useraudit::global_auth_guard().is_authorized(useraudit::AuthAction::StopService)) {
+                OutputDebugStringW(L"[UserAuditSvc] Stop denied — IT USB authorization required\n");
+                return;
+            }
             report_status(SERVICE_STOP_PENDING, NO_ERROR, 3000);
             g_stop_requested.store(true);
             if (g_on_stop) {

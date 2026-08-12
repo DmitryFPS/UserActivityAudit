@@ -10,6 +10,8 @@
 
 namespace useraudit {
 
+class LockdownManager;
+
 // Security/System event subscriptions for tamper attempts (service stop, protected paths).
 class TamperCollector {
 public:
@@ -20,6 +22,7 @@ public:
     TamperCollector& operator=(const TamperCollector&) = delete;
 
     void set_stop_flag(volatile bool* flag) { stop_flag_ = flag; }
+    void set_lockdown_manager(LockdownManager* manager) { lockdown_manager_ = manager; }
 
     bool start();
     void stop();
@@ -39,6 +42,7 @@ private:
     EVT_HANDLE system_subscription_ = nullptr;
     EVT_HANDLE security_subscription_ = nullptr;
     volatile bool* stop_flag_ = nullptr;
+    LockdownManager* lockdown_manager_ = nullptr;
 };
 
 }  // namespace useraudit

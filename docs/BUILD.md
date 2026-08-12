@@ -9,7 +9,17 @@
   - Desktop development with C++
   - C++ CMake tools for Windows
 - IntelliJ IDEA — опциональный редактор; **не заменяет** MSVC (см. SETUP.md)
-- (Фаза 5+) Windows Driver Kit (WDK)
+- (Фаза 5+) Windows Driver Kit (WDK) — см. [DRIVER.md](DRIVER.md)
+
+Результаты сборки:
+
+| Бинарник | Путь |
+|----------|------|
+| UserAudit.exe | `build/native/UserAuditSvc/` |
+| UserAuditWatchdog.exe | `build/native/UserAuditWatchdog/` |
+| UserAuditKeygen.exe | `build/native/UserAuditKeygen/` |
+| UserAuditAdmin.exe | `build/native/UserAuditAdmin/` |
+| UserAuditFilter.sys | WDK/EWDK (см. DRIVER.md) |
 
 ## Конфигурация и сборка
 

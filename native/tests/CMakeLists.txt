@@ -100,3 +100,21 @@ if(MSVC)
 endif()
 
 add_test(NAME test_upload_client COMMAND test_upload_client)
+
+add_executable(test_ed25519_auth
+    test_ed25519_auth.cpp
+)
+
+target_include_directories(test_ed25519_auth PRIVATE
+    ../UserAuditSvc/include
+    ../common/include
+    ../common/ed25519_orlp/src
+)
+
+target_link_libraries(test_ed25519_auth PRIVATE UserAuditCommon)
+
+if(MSVC)
+    target_compile_options(test_ed25519_auth PRIVATE /W4 /permissive-)
+endif()
+
+add_test(NAME test_ed25519_auth COMMAND test_ed25519_auth)

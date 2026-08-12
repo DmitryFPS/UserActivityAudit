@@ -1,10 +1,14 @@
 #include "useraudit/event_loop.hpp"
 
 #include "useraudit/acl_guard.hpp"
+#include "useraudit/auth_guard.hpp"
+#include "useraudit/auth_pipe_server.hpp"
 #include "useraudit/config_manager.hpp"
 #include "useraudit/correlation_tracker.hpp"
+#include "useraudit/driver_client.hpp"
 #include "useraudit/encrypted_log_writer.hpp"
 #include "useraudit/file_collector.hpp"
+#include "useraudit/lockdown_manager.hpp"
 #include "useraudit/network_collector.hpp"
 #include "useraudit/paths.hpp"
 #include "useraudit/pipe_server.hpp"
@@ -39,6 +43,19 @@ void run_event_loop(volatile bool& stop_requested) {
     }
 
     CorrelationTracker correlation;
+    LockdownManager lockdown_manager(writer, hostname);
+    set_global_lockdown_manager(&lockdown_manager);
+
+    AuthGuard& auth_guard = global_auth_guard();
+    auth_guard.load_org_public_key();
+    AuthPipeServer auth_pipe(auth_guard);
+    auth_pipe.set_stop_flag(&stop_requested);
+    if (!auth_pipe.start()) {
+        OutputDebugStringW(L"[UserAuditSvc] AuthPipeServer failed to start\n");
+    }
+
+    global_driver_client().connect();
+
     PipeIngestServer pipe_server(writer);
     SessionAgentManager session_agents;
     session_agents.set_agent_options(config.window_poll_sec(), config.collector_enabled("clipboard"));
@@ -129,6 +146,7 @@ void run_event_loop(volatile bool& stop_requested) {
 
     TamperCollector tamper_collector(writer, hostname);
     tamper_collector.set_stop_flag(&stop_requested);
+    tamper_collector.set_lockdown_manager(&lockdown_manager);
     if (!tamper_collector.start()) {
         OutputDebugStringW(L"[UserAuditSvc] TamperCollector failed to start\n");
     }
@@ -153,6 +171,7 @@ void run_event_loop(volatile bool& stop_requested) {
         network_collector->stop();
     }
     upload_client.stop();
+    auth_pipe.stop();
     tamper_collector.stop();
     acl_guard.stop();
     if (file_collector) {

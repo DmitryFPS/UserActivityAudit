@@ -1,0 +1,32 @@
+[Version]
+Signature="$WINDOWS NT$"
+Class=ActivityMonitor
+ClassGuid={b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
+Provider=%ManufacturerName%
+DriverVer=08/12/2026,1.0.0.0
+CatalogFile=UserAuditFilter.cat
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[DefaultInstall.NT]
+CopyFiles = DriverCopy
+
+[DefaultInstall.NT.Services]
+AddService = UserAuditFilter,%SPSVCINST_ASSOCSERVICE%,UserAuditFilterService
+
+[DriverCopy]
+UserAuditFilter.sys
+
+[UserAuditFilterService]
+DisplayName    = %ServiceName%
+ServiceType    = 2
+StartType      = 3
+ErrorControl   = 1
+ServiceBinary  = %12%\UserAuditFilter.sys
+
+[Strings]
+ManufacturerName = "UserActivityAudit"
+ServiceName = "UserAudit Minifilter"
+SPSVCINST_ASSOCSERVICE = 0x00000002
