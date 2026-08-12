@@ -27,6 +27,8 @@ cmake -S native -B build/native -G "Visual Studio 17 2022" -A x64
 cmake --build build/native --config Release
 ```
 
+Output: `UserAudit.exe` (single binary — service + internal user-agent mode).
+
 ### Server & Admin (.NET 10)
 
 Coming in Phase 6–7.

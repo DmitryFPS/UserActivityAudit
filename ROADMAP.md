@@ -37,7 +37,7 @@ Commercial Production v1.0. Pilot fleet: 15 laptops.
 | SessionCollector | Event Log 4624, 4634, 4800, 4801 | ✅ Sprint 1 |
 | EventWriter (JSONL) | Plaintext JSONL | ✅ Sprint 1 |
 | ProcessCollector | ETW Microsoft-Windows-Kernel-Process | ✅ Sprint 2 |
-| ForegroundCollector | UserAuditUser.exe in user session → pipe | ✅ Sprint 2b |
+| ForegroundCollector | Same binary, `--user-agent` in user session → pipe | ✅ Sprint 2b |
 | UsbCollector | WMI Win32_VolumeChangeEvent | Sprint 3 |
 
 ### Acceptance criteria

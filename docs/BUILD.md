@@ -19,9 +19,7 @@ cmake --build build/native --config Release
 cmake --build build/native --config Debug
 ```
 
-Output:
-- `build/native/UserAuditSvc/Release/UserAuditSvc.exe`
-- `build/native/UserAuditUser/Release/UserAuditUser.exe` (must be alongside UserAuditSvc)
+Output: `build/native/UserAuditSvc/UserAudit.exe` (single binary)
 
 ## Run unit tests
 
@@ -35,7 +33,7 @@ ctest --test-dir build/native -C Debug
 Debug builds define `USERAUDIT_DEV_CONSOLE`. Run directly:
 
 ```powershell
-.\build\native\UserAuditSvc\Debug\UserAuditSvc.exe
+.\build\native\UserAuditSvc\Debug\UserAudit.exe
 ```
 
 When not started by Service Control Manager, the agent runs in console mode.
@@ -43,14 +41,14 @@ When not started by Service Control Manager, the agent runs in console mode.
 ## Install service (admin, Release)
 
 ```powershell
-.\build\native\UserAuditSvc\Release\UserAuditSvc.exe --install
+.\build\native\UserAuditSvc\Release\UserAudit.exe --install
 sc start UserAuditSvc
 ```
 
 ## Uninstall service (admin)
 
 ```powershell
-.\build\native\UserAuditSvc\Release\UserAuditSvc.exe --uninstall
+.\build\native\UserAuditSvc\Release\UserAudit.exe --uninstall
 ```
 
 > Production uninstall requires IT USB ceremony (Phase 5). Dev `--uninstall` is for setup only.

@@ -1,11 +1,16 @@
+#include "useraudit/user_agent_mode.hpp"
+
 #include "useraudit/foreground_collector.hpp"
-#include "useraudit/pipe_client.hpp"
 #include "useraudit/paths.hpp"
+#include "useraudit/pipe_client.hpp"
 
 #include <windows.h>
+#include <wtsapi32.h>
 
 #include <iostream>
 #include <string>
+
+namespace useraudit {
 
 namespace {
 
@@ -20,24 +25,23 @@ unsigned long parse_session_id(int argc, wchar_t** argv) {
 
 }  // namespace
 
-int wmain(int argc, wchar_t** argv) {
+int run_user_agent_mode(int argc, wchar_t** argv) {
     const unsigned long session_id = parse_session_id(argc, argv);
-    const std::string hostname = useraudit::get_hostname_utf8();
+    const std::string hostname = get_hostname_utf8();
 
-    useraudit::PipeClient pipe;
+    PipeClient pipe;
     if (!pipe.connect()) {
-        std::wcerr << L"[UserAuditUser] Failed to connect to UserAuditSvc pipe.\n";
+        OutputDebugStringW(L"[UserAudit] User-agent failed to connect to service pipe.\n");
         return 1;
     }
 
-    useraudit::ForegroundCollector foreground(pipe, hostname, session_id, 5);
+    ForegroundCollector foreground(pipe, hostname, session_id, 5);
     if (!foreground.start()) {
-        std::wcerr << L"[UserAuditUser] ForegroundCollector failed to start.\n";
         return 1;
     }
 
 #if defined(USERAUDIT_DEV_CONSOLE)
-    std::wcout << L"[UserAuditUser] Session " << session_id << L" foreground tracking active.\n";
+    std::wcout << L"[UserAudit] User-agent session " << session_id << L" active.\n";
 #endif
 
     volatile bool stop = false;
@@ -51,3 +55,5 @@ int wmain(int argc, wchar_t** argv) {
     pipe.disconnect();
     return 0;
 }
+
+}  // namespace useraudit

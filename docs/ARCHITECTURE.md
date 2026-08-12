@@ -10,8 +10,8 @@ Commercial Production v1.0. See [ANALYTICS.md](../ANALYTICS.md) for full specifi
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         CLIENT (each laptop)                             │
 │  ┌──────────────┐   ┌──────────────────────────────────────────────┐   │
-│  │ UserAudit.sys│   │ UserAuditSvc.exe (LocalSystem)               │   │
-│  │ (minifilter) │◄──│ Collectors L1/L2/L3 │ Crypto │ Upload        │   │
+│  │ UserAudit.sys│   │ UserAudit.exe (LocalSystem)                  │   │
+│  │ (minifilter) │◄──│ L1/L2 + pipe; spawns --user-agent per session │   │
 │  └──────────────┘   └──────────────────────────────────────────────┘   │
 │         │                              │                                 │
 │         │         ┌────────────────────┘                                 │

@@ -236,12 +236,7 @@ void SessionAgentManager::stop_agent_for_user(const std::string& user) {
 }
 
 std::wstring SessionAgentManager::resolve_user_agent_path() const {
-    const std::wstring service_path = get_module_path();
-    const auto pos = service_path.find_last_of(L"\\/");
-    if (pos == std::wstring::npos) {
-        return L"UserAuditUser.exe";
-    }
-    return service_path.substr(0, pos + 1) + L"UserAuditUser.exe";
+    return get_module_path();
 }
 
 bool SessionAgentManager::launch_agent(unsigned long session_id, HANDLE& out_process) {
@@ -250,7 +245,7 @@ bool SessionAgentManager::launch_agent(unsigned long session_id, HANDLE& out_pro
 
     std::wstring command_line = L"\"";
     command_line += exe_path;
-    command_line += L"\" --session-id ";
+    command_line += L"\" --user-agent --session-id ";
     command_line += std::to_wstring(session_id);
     std::vector<wchar_t> command_buffer(command_line.begin(), command_line.end());
     command_buffer.push_back(L'\0');

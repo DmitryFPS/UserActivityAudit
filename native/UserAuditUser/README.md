@@ -1,5 +1,9 @@
-# UserAuditUser — interactive session agent
+# Merged into UserAudit.exe
 
-Runs in the **logged-on user's session** (not LocalSystem). Collects foreground window events and sends them to `UserAuditSvc` via named pipe.
+User session foreground tracking runs as:
 
-Launched automatically by `SessionAgentManager` on login. Binary must sit next to `UserAuditSvc.exe`.
+```
+UserAudit.exe --user-agent --session-id <id>
+```
+
+Launched automatically by the service. Do not run manually.

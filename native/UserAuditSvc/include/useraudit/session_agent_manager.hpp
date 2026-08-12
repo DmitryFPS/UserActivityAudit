@@ -10,7 +10,7 @@
 
 namespace useraudit {
 
-// Launches UserAuditUser.exe in interactive user sessions for foreground tracking.
+// Launches UserAudit.exe --user-agent in interactive user sessions.
 class SessionAgentManager {
 public:
     using SessionHook = std::function<void(const std::string& action, const std::string& user)>;

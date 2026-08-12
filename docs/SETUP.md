@@ -1,79 +1,56 @@
 # Сборка и запуск
 
-## 1. IntelliJ IDEA и этот проект
+## Один файл — `UserAudit.exe`
 
-**IntelliJ IDEA** (Java/Kotlin) **не содержит компилятор C++** для Windows. Для `UserAuditSvc` нужен **MSVC** (Microsoft C++).
+Для вас **один запуск**. Внутри программа сама поднимает нужные процессы:
 
-### Что установить (один раз)
+| Режим | Как запускается | Кто видит |
+|-------|-----------------|-----------|
+| **Служба** | `UserAudit.exe --install` + `sc start` | Вы один раз |
+| **User-agent** | Служба сама: `UserAudit.exe --user-agent --session-id N` | Автоматически при login |
 
-1. **[Visual Studio Build Tools 2022](https://visualstudio.microsoft.com/visual-cpp-build-tools/)** (бесплатно)
-   - Workload: **Desktop development with C++**
-   - Компоненты: **MSVC**, **Windows SDK**, **C++ CMake tools for Windows**
-2. Это **не заменяет** IDEA — даёт `cl.exe`, `cmake`, SDK для сборки из терминала.
+Вам **не нужно** вручную запускать второй exe.
 
-### Как работать из IDEA
+---
 
-1. Откройте папку `UserActivityAudit` в IDEA (как обычный проект).
-2. **View → Tool Windows → Terminal**
-3. Сборка:
+## 1. IntelliJ IDEA
+
+IDEA не заменяет **MSVC**. Установите [Visual Studio Build Tools 2022](https://visualstudio.microsoft.com/visual-cpp-build-tools/) → **Desktop development with C++**.
+
+Сборка из терминала IDEA:
 
 ```powershell
 cmake -S native -B build/native -G "Visual Studio 17 2022" -A x64
 cmake --build build/native --config Debug
 ```
 
-4. Редактирование C++ в IDEA работает; **CLion** (от JetBrains) удобнее для C++ (отладчик, CMake UI), но **не обязателен**.
-
-> **Итог:** IDEA — редактор + терминал; **Build Tools 2022** — компилятор.
-
 ---
 
-## 2. SessionCollector (Security log) — что сделать
-
-`SessionCollector` читает канал **Security** (события входа/выхода/блокировки). Обычный пользователь **не имеет** доступа.
+## 2. Установка (production)
 
 ```powershell
-cmake --build build/native --config Debug
-# Output (same folder):
-#   UserAuditSvc/Debug/UserAuditSvc.exe
-#   UserAuditUser/Debug/UserAuditUser.exe
-```
-
-> **Важно:** `UserAuditUser.exe` должен лежать **рядом** с `UserAuditSvc.exe`.
-
-### Production (рекомендуется)
-
-```powershell
-# PowerShell от имени администратора — оба exe в одной папке
-.\UserAuditSvc.exe --install
+# Admin PowerShell
+.\UserAudit.exe --install
 sc start UserAuditSvc
 ```
 
-Служба автоматически:
-1. Запускает **UserAuditUser.exe** в сессии каждого вошедшего пользователя
-2. Принимает `window.focus` через named pipe `\\.\pipe\UserAudit\events`
-3. Пишет всё в `%ProgramData%\UserAudit\logs\`
+Проверка логов:
+
+```powershell
+Get-Content "C:\ProgramData\UserAudit\logs\$(Get-Date -Format yyyy-MM-dd).jsonl" -Tail 10
+```
 
 ### Быстрый тест (Debug)
 
 ```powershell
-# Admin PowerShell, оба exe в Debug/
-.\UserAuditSvc.exe
-# Служба поднимет UserAuditUser в текущей сессии
-# Переключите окна — в JSONL появится window.focus
+.\UserAudit.exe
+# Служба в dev-режиме сама запустит user-agent в вашей сессии
+# Переключите окна → window.focus в JSONL
 ```
 
-### SessionCollector (Security log)
+### Security log (session.login и т.д.)
 
-Требует **LocalSystem** (служба) или **admin** (dev). События `session.login` / `session.lock` и т.д.
-
-### ProcessCollector
-
-ETW — работает из службы без доп. настроек.
-
-### Если Security log пустой
-
-Включите аудит входа (админ):
+Нужна служба LocalSystem или admin. Если пусто — `auditpol` (см. ниже).
 
 ```powershell
 auditpol /set /subcategory:"Logon" /success:enable /failure:enable
@@ -81,19 +58,13 @@ auditpol /set /subcategory:"Logoff" /success:enable
 auditpol /set /subcategory:"Other Logon/Logoff Events" /success:enable
 ```
 
-Увеличьте журнал Security: **gpedit.msc** → … → **Max log size** ≥ 256 MB.
-
 ---
 
-## 3. Каталог логов
-
-Все события пишутся **только** в:
+## 3. Логи
 
 ```
 C:\ProgramData\UserAudit\logs\YYYY-MM-DD.jsonl
 ```
-
-Переопределение через переменные окружения **отключено** (production policy).
 
 ---
 
@@ -106,10 +77,8 @@ cmake --build build/native --config Debug --target test_event_serializer
 
 ---
 
-## 5. Удаление службы (dev)
+## 5. Удаление (dev)
 
 ```powershell
-.\UserAuditSvc.exe --uninstall
+.\UserAudit.exe --uninstall
 ```
-
-Production uninstall — IT USB (Phase 5).
