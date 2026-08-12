@@ -12,6 +12,7 @@ if(NOT WIN32)
 endif()
 
 add_subdirectory(UserAuditSvc)
+add_subdirectory(tests)
 
 # Phase 5+: add_subdirectory(UserAuditWatchdog)
 # Phase 5+: add_subdirectory(UserAuditFilter)

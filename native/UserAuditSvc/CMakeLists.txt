@@ -2,6 +2,11 @@ add_executable(UserAuditSvc
     src/main.cpp
     src/service_host.cpp
     src/event_loop.cpp
+    src/event_serializer.cpp
+    src/jsonl_writer.cpp
+    src/paths.cpp
+    src/session_collector.cpp
+    src/time_utils.cpp
 )
 
 target_include_directories(UserAuditSvc PRIVATE
@@ -21,6 +26,10 @@ target_compile_definitions(UserAuditSvc PRIVATE
 
 target_link_libraries(UserAuditSvc PRIVATE
     Advapi32
+    Ole32
+    Shell32
+    wevtapi
+    rpcrt4
 )
 
 if(MSVC)

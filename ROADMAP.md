@@ -28,24 +28,24 @@ Commercial Production v1.0. Pilot fleet: 15 laptops.
 
 ---
 
-## Phase 1 — L1 Collectors
+## Phase 1 — L1 Collectors (in progress)
 
 **Goal:** Real-time collection — session, process, foreground window, USB.
 
-| Module | Source |
-|--------|--------|
-| SessionCollector | Event Log 4624, 4634, 4800, 4801 |
-| ProcessCollector | ETW Microsoft-Windows-Kernel-Process |
-| ForegroundCollector | GetForegroundWindow, poll 3–5 sec |
-| UsbCollector | WMI Win32_VolumeChangeEvent |
-| EventWriter | Plaintext JSONL (encrypted in Phase 2) |
+| Module | Source | Status |
+|--------|--------|--------|
+| SessionCollector | Event Log 4624, 4634, 4800, 4801 | ✅ Sprint 1 |
+| EventWriter (JSONL) | Plaintext JSONL | ✅ Sprint 1 |
+| ProcessCollector | ETW Microsoft-Windows-Kernel-Process | Sprint 2 |
+| ForegroundCollector | GetForegroundWindow, poll 3–5 sec | Sprint 2 |
+| UsbCollector | WMI Win32_VolumeChangeEvent | Sprint 3 |
 
 ### Acceptance criteria
 - [ ] Service runs as LocalSystem, survives reboot
-- [ ] Login event → JSONL `session.login`
+- [x] Login event → JSONL `session.login` (SessionCollector)
 - [ ] notepad.exe → `process.start` + `window.focus`
 - [ ] USB insert → `usb.insert`
-- [ ] Unit tests for event serialization
+- [x] Unit tests for event serialization
 - [ ] RAM ≤ 20 MB (pre-crypto)
 
 ---
@@ -231,4 +231,4 @@ Each phase may split into 2–4 sprints. After each sprint:
 2. ROADMAP checkboxes updated
 3. Brief summary: done / next
 
-**Current phase:** Phase 0 ✅ → **Next: Phase 1**
+**Current phase:** Phase 1 (Sprint 1 done) → **Next: Phase 1 Sprint 2** (Process + Foreground)

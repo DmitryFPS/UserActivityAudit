@@ -18,6 +18,13 @@ cmake --build build/native --config Debug
 
 Output: `build/native/UserAuditSvc/Release/UserAuditSvc.exe`
 
+## Run unit tests
+
+```powershell
+cmake --build build/native --config Debug --target test_event_serializer
+ctest --test-dir build/native -C Debug
+```
+
 ## Development console mode
 
 Debug builds define `USERAUDIT_DEV_CONSOLE`. Run directly:
