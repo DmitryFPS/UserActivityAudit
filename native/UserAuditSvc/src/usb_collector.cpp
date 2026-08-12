@@ -300,6 +300,10 @@ void UsbCollector::wmi_thread_main() {
                     correlation_->on_usb_remove(wide_to_utf8(drive_name));
                 }
 
+                if (event_type == kVolumeArrival && insert_observer_) {
+                    insert_observer_(event);
+                }
+
                 writer_.write(event);
             }
         }

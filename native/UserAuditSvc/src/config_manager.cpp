@@ -316,6 +316,33 @@ bool parse_agent_config_json(const std::string& json, AgentConfig& out, std::str
         extract_bool(collectors_json, "network", config.collectors.network);
         extract_bool(collectors_json, "clipboard", config.collectors.clipboard);
         extract_bool(collectors_json, "print", config.collectors.print);
+        extract_bool(collectors_json, "forensic", config.collectors.forensic);
+    }
+
+    const std::string forensic_json = extract_object_body(json, "forensic");
+    if (!forensic_json.empty()) {
+        extract_bool(forensic_json, "enabled", config.forensic.enabled);
+        extract_bool(forensic_json, "trigger_on_usb", config.forensic.trigger_on_usb);
+        extract_int(forensic_json, "schedule_hours", config.forensic.schedule_hours);
+        extract_int(forensic_json, "max_browser_rows", config.forensic.max_browser_rows);
+        extract_int(forensic_json, "max_prefetch_files", config.forensic.max_prefetch_files);
+        extract_bool(forensic_json, "browser_chrome", config.forensic.browser_chrome);
+        extract_bool(forensic_json, "browser_edge", config.forensic.browser_edge);
+        extract_bool(forensic_json, "browser_firefox", config.forensic.browser_firefox);
+        extract_bool(forensic_json, "artifact_prefetch", config.forensic.artifact_prefetch);
+        extract_bool(forensic_json, "artifact_userassist", config.forensic.artifact_userassist);
+        extract_bool(forensic_json, "artifact_usb_registry", config.forensic.artifact_usb_registry);
+
+        std::string schedule;
+        if (extract_quoted_string(forensic_json, "schedule", schedule)) {
+            if (schedule == "weekly") {
+                config.forensic.schedule_hours = 168;
+            } else if (schedule == "nightly") {
+                config.forensic.schedule_hours = 24;
+            } else if (schedule == "off") {
+                config.forensic.schedule_hours = 0;
+            }
+        }
     }
 
     const std::string paths_json = extract_object_body(json, "paths");
@@ -387,6 +414,10 @@ bool parse_agent_config_json(const std::string& json, AgentConfig& out, std::str
             break;
     }
 
+    if (config.profile == AuditProfile::Full && forensic_json.empty()) {
+        config.forensic.schedule_hours = 24;
+    }
+
     out = config;
     error.clear();
     return true;
@@ -447,7 +478,21 @@ bool ConfigManager::write_default_config(const std::filesystem::path& path) cons
     "file": true,
     "network": true,
     "clipboard": false,
-    "print": true
+    "print": true,
+    "forensic": true
+  },
+  "forensic": {
+    "enabled": true,
+    "trigger_on_usb": true,
+    "schedule": "off",
+    "max_browser_rows": 500,
+    "max_prefetch_files": 50,
+    "browser_chrome": true,
+    "browser_edge": true,
+    "browser_firefox": true,
+    "artifact_prefetch": true,
+    "artifact_userassist": true,
+    "artifact_usb_registry": true
   },
   "paths": {
     "critical": [
@@ -531,6 +576,7 @@ bool ConfigManager::collector_enabled(const char* name) const {
     if (key == "network") return config_.collectors.network;
     if (key == "clipboard") return config_.collectors.clipboard;
     if (key == "print") return config_.collectors.print;
+    if (key == "forensic") return config_.collectors.forensic;
     return false;
 }
 

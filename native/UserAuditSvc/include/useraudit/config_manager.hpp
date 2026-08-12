@@ -18,6 +18,21 @@ struct CollectorToggles {
     bool network = true;
     bool clipboard = false;
     bool print = true;
+    bool forensic = true;
+};
+
+struct ForensicSettings {
+    bool enabled = true;
+    bool trigger_on_usb = true;
+    int schedule_hours = 0;
+    int max_browser_rows = 500;
+    int max_prefetch_files = 50;
+    bool browser_chrome = true;
+    bool browser_edge = true;
+    bool browser_firefox = true;
+    bool artifact_prefetch = true;
+    bool artifact_userassist = true;
+    bool artifact_usb_registry = true;
 };
 
 struct AgentConfig {
@@ -35,6 +50,7 @@ struct AgentConfig {
     std::string ingest_url;
     std::string mtls_cert_thumbprint;
     int upload_interval_minutes = 120;
+    ForensicSettings forensic{};
 };
 
 class ConfigManager {

@@ -24,6 +24,12 @@ std::filesystem::path resolve_data_root();
 // Mock upload outbox: %ProgramData%\UserAudit\outbox
 std::filesystem::path resolve_outbox_directory();
 
+// L3 evidence packs: %ProgramData%\UserAudit\packs
+std::filesystem::path resolve_packs_directory();
+
+// L3 staging workspace: %ProgramData%\UserAudit\forensic\staging
+std::filesystem::path resolve_forensic_staging_directory();
+
 // Upload cursor: %ProgramData%\UserAudit\keys\upload.state
 std::filesystem::path resolve_upload_state_path();
 

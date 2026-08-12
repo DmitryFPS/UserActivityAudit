@@ -87,6 +87,14 @@ std::filesystem::path resolve_upload_state_path() {
     return resolve_keys_directory() / L"upload.state";
 }
 
+std::filesystem::path resolve_packs_directory() {
+    return resolve_data_root() / L"packs";
+}
+
+std::filesystem::path resolve_forensic_staging_directory() {
+    return resolve_data_root() / L"forensic" / L"staging";
+}
+
 std::string get_hostname_utf8() {
     std::array<wchar_t, MAX_COMPUTERNAME_LENGTH + 1> buffer{};
     DWORD size = static_cast<DWORD>(buffer.size());

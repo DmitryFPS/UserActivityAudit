@@ -301,6 +301,27 @@ CSV: `installer/soak-*.csv` — svc=RUNNING, ram_mb_max ≤15, decrypt=ok.
 
 ---
 
+## 16. Фаза 8 — L3 Forensic (USB-триггер)
+
+При `collectors.forensic: true` и `forensic.trigger_on_usb: true` вставка USB запускает сбор L3 в фоне.
+
+```powershell
+# После USB insert — проверка pack
+dir C:\ProgramData\UserAudit\packs\
+& "C:\Program Files\UserAudit\UserAudit.exe" --decrypt --date (Get-Date -Format yyyy-MM-dd) | Select-String "forensic"
+```
+
+| Событие | cat / act | Ожидание |
+|---------|-----------|----------|
+| Pack создан | forensic / pack_created | `pack_path`, `browser_history_rows` |
+| Browser summary | browser / history_collected | при наличии History DB |
+
+Pack содержит: `browser/*.jsonl`, `registry/usbstor.txt`, `artifacts/prefetch/manifest.txt`, `manifest.json`.
+
+Расписание: `"schedule": "off"` (только USB), `"weekly"`, `"nightly"` (Full profile по умолчанию nightly если секция forensic отсутствует).
+
+---
+
 ## 10. Устранение проблем
 
 | Симптом | Решение |

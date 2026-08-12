@@ -15,7 +15,21 @@
     "file": true,
     "network": true,
     "clipboard": false,
-    "print": true
+    "print": true,
+    "forensic": true
+  },
+  "forensic": {
+    "enabled": true,
+    "trigger_on_usb": true,
+    "schedule": "off",
+    "max_browser_rows": 500,
+    "max_prefetch_files": 50,
+    "browser_chrome": true,
+    "browser_edge": true,
+    "browser_firefox": true,
+    "artifact_prefetch": true,
+    "artifact_userassist": true,
+    "artifact_usb_registry": true
   },
   "paths": {
     "critical": [

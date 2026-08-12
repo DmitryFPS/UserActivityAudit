@@ -5,6 +5,7 @@
 #include "useraudit/auth_pipe_server.hpp"
 #include "useraudit/config_manager.hpp"
 #include "useraudit/correlation_tracker.hpp"
+#include "useraudit/deep_collector.hpp"
 #include "useraudit/driver_client.hpp"
 #include "useraudit/encrypted_log_writer.hpp"
 #include "useraudit/file_collector.hpp"
@@ -81,6 +82,15 @@ void run_event_loop(volatile bool& stop_requested) {
     std::unique_ptr<FileCollector> file_collector;
     std::unique_ptr<NetworkCollector> network_collector;
     std::unique_ptr<PrintCollector> print_collector;
+    std::unique_ptr<DeepCollector> deep_collector;
+
+    if (config.collector_enabled("forensic") && config.raw_config().forensic.enabled) {
+        deep_collector = std::make_unique<DeepCollector>(writer, hostname, config);
+        deep_collector->set_stop_flag(&stop_requested);
+        if (!deep_collector->start()) {
+            OutputDebugStringW(L"[UserAuditSvc] DeepCollector failed to start\n");
+        }
+    }
 
     if (config.collector_enabled("session")) {
         session_collector = std::make_unique<SessionCollector>(writer, hostname);
@@ -110,6 +120,10 @@ void run_event_loop(volatile bool& stop_requested) {
         usb_collector = std::make_unique<UsbCollector>(writer, hostname);
         usb_collector->set_stop_flag(&stop_requested);
         usb_collector->set_correlation_tracker(&correlation);
+        if (deep_collector && config.raw_config().forensic.trigger_on_usb) {
+            usb_collector->set_insert_observer(
+                [&deep_collector](const AuditEvent& event) { deep_collector->trigger_usb(event); });
+        }
         if (!usb_collector->start()) {
             OutputDebugStringW(L"[UserAuditSvc] UsbCollector failed to start\n");
         }
@@ -174,6 +188,9 @@ void run_event_loop(volatile bool& stop_requested) {
 
     if (network_collector) {
         network_collector->stop();
+    }
+    if (deep_collector) {
+        deep_collector->stop();
     }
     upload_client.stop();
     auth_pipe.stop();

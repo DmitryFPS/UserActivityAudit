@@ -78,7 +78,9 @@ Upload — TLS (WinHTTP), опционально mTLS (server stack).
 
 ## 8. Forensic
 
-Экспорт ZIP из Dashboard: расшифрованные события + метаданные.  
-Не включает L3 browser/prefetch до Phase 8.
+- **Dashboard Forensic ZIP** — события L1/L2 из загруженного лога
+- **Agent L3 pack** — `%ProgramData%\UserAudit\packs\*.zip` (browser + USB registry + artifacts), создаётся при USB insert или по расписанию
+- Browser history/downloads — Chrome, Edge, Firefox через winsqlite3.dll
+- USBSTOR registry export — совместим с форматом UsbForensicAudit
 
 См. также [STANDALONE.md](STANDALONE.md), [DRIVER.md](DRIVER.md).

@@ -118,3 +118,23 @@ if(MSVC)
 endif()
 
 add_test(NAME test_ed25519_auth COMMAND test_ed25519_auth)
+
+add_executable(test_forensic
+    test_forensic.cpp
+    ../UserAuditSvc/src/zip_writer.cpp
+    ../UserAuditSvc/src/browser_parser.cpp
+    ../UserAuditSvc/src/sqlite_loader.cpp
+    ../UserAuditSvc/src/time_utils.cpp
+)
+
+target_include_directories(test_forensic PRIVATE
+    ../UserAuditSvc/include
+)
+
+target_link_libraries(test_forensic PRIVATE Ole32 Shell32 rpcrt4)
+
+if(MSVC)
+    target_compile_options(test_forensic PRIVATE /W4 /permissive-)
+endif()
+
+add_test(NAME test_forensic COMMAND test_forensic)

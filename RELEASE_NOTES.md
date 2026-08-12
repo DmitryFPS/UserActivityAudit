@@ -20,6 +20,7 @@
 - LogImporter: чтение `.enc` при работающей службе (FileShare.ReadWrite)
 - Пакет `dist/`: MSI + Dashboard + Tools + Docs
 - QA: TamperVerifyTest, SmokeImport, soak-test.ps1
+- **L3 Forensic:** USB-триггер → evidence pack (browser, USBSTOR, prefetch, UserAssist)
 - WiX MSI x64, проверен `msiexec /quiet`
 
 ---
@@ -29,7 +30,6 @@
 - Minifilter `.sys` — исходник готов; сборка требует WDK toolset в VS
 - Reboot-тест — выполняется администратором (`verify-reboot.ps1`)
 - Подпись — unsigned до применения EV (`sign.ps1`)
-- L3 Forensic (браузер, prefetch) — Phase 8, не в RC1
 - Серверный portal — опциональный модуль
 
 ---

@@ -36,6 +36,13 @@ add_executable(UserAudit
     src/auth_pipe_server.cpp
     src/driver_client.cpp
     src/lockdown_manager.cpp
+    src/deep_collector.cpp
+    src/browser_parser.cpp
+    src/artifact_parser.cpp
+    src/usb_registry_parser.cpp
+    src/evidence_pack.cpp
+    src/zip_writer.cpp
+    src/sqlite_loader.cpp
 )
 
 target_include_directories(UserAudit PRIVATE

@@ -175,21 +175,24 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 
 ---
 
-## Фаза 8 — L3 Forensic
+## Фаза 8 — L3 Forensic ✅
 
-**Цель:** глубокий сбор — браузер, Prefetch, реестр, evidence pack.
+**Цель:** глубокий сбор — браузер, Prefetch, реестр, evidence pack (триггер USB + опциональное расписание).
 
-| Модуль | Примечание |
-|--------|------------|
-| DeepCollector | По расписанию + триггер (USB) |
-| BrowserParser | Chrome, Edge, Firefox SQLite |
-| ArtifactParser | Prefetch, Jump Lists, UserAssist |
-| EvidencePack | ZIP: JSONL + артефакты |
+| Модуль | Примечание | Статус |
+|--------|------------|--------|
+| DeepCollector | Очередь, низкий приоритет потока, USB-триггер | ✅ |
+| BrowserParser | Chrome, Edge, Firefox (winsqlite3) | ✅ |
+| ArtifactParser | Prefetch manifest, UserAssist (registry) | ✅ |
+| UsbRegistryParser | USBSTOR export (UsbForensicAudit-совместимо) | ✅ |
+| EvidencePack | ZIP в `%ProgramData%\UserAudit\packs\` | ✅ |
 
 ### Критерии приёмки
-- [ ] L3 по расписанию не блокирует L1 (отдельный поток, низкий приоритет)
-- [ ] История браузера в evidence pack
-- [ ] Интеграция с модулями UsbForensicAudit
+- [x] L3 по расписанию/триггеру не блокирует L1 (отдельный поток, `THREAD_MODE_BACKGROUND`)
+- [x] История/загрузки браузера в evidence pack (`browser/*.jsonl`)
+- [x] USB registry + correlation в pack; UsbForensicAudit-формат export
+
+**Конфиг:** `forensic.trigger_on_usb` (по умолчанию `true`), `schedule: off|weekly|nightly`
 
 ---
 
@@ -241,4 +244,4 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** **RC1 готов к пилоту** (dist/, docs, MSI) → подпись EV + reboot-тест на эталоне → rollout 15 ноутбуков
+**Текущая фаза:** **RC1 + L3 Forensic** (USB-триггер, evidence pack) → подпись EV + reboot-тест → rollout 15 ноутбуков
