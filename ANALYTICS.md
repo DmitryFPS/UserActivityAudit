@@ -1,121 +1,122 @@
-# UserActivityAudit — Product Analytics (Commercial v1.0)
+# UserActivityAudit — Аналитика продукта (Commercial v1.0)
 
-Full specification consolidated from product design sessions.  
-**Mode:** Commercial production. **Pilot fleet:** 15 laptops (2 GB RAM supported).
-
----
-
-## 1. Product summary
-
-| Item | Value |
-|------|-------|
-| Product | User activity audit for Windows 10/11 |
-| Client | C++20 Windows Service, ≤15 MB RAM (Low profile) |
-| Server | .NET 10 — ingest, escrow, alerts, web portal |
-| Admin | .NET 10 — WPF dashboard, Excel/PDF, forensic |
-| Security | AES-256-GCM, TPM+USB split key, minifilter, IT USB |
-| Deployment | MSI silent, GPO, Docker server |
-
-**UTP:** Forensic-grade audit + ultra-light agent + anti-admin tamper + encrypted logs.
+Полная спецификация, собранная из сессий проектирования.  
+**Режим:** коммерческий production. **Пилот:** 15 ноутбуков (поддержка 2 ГБ ОЗУ).
 
 ---
 
-## 2. Goals & scenarios
+## 1. Кратко о продукте
 
-- Corporate monitoring (time, apps, compliance)
-- IB / incident investigation (timeline, USB, exfiltration)
+| Параметр | Значение |
+|----------|----------|
+| Продукт | Аудит действий пользователя Windows 10/11 |
+| Клиент | Служба C++20, ≤15 МБ ОЗУ (профиль Low) |
+| Сервер | .NET 10 — ingest, escrow, alerts, веб-портал |
+| Админка | .NET 10 — WPF, Excel/PDF, forensic |
+| Безопасность | AES-256-GCM, split key TPM+USB, minifilter, IT USB |
+| Деплой | MSI silent, GPO, Docker-сервер |
+
+**УТП:** forensic-уровень аудита + лёгкий агент + защита от локального админа + шифрованные логи.
+
+---
+
+## 2. Цели и сценарии
+
+- Корпоративный мониторинг (время, приложения, compliance)
+- ИБ / расследование инцидентов (timeline, USB, exfiltration)
 - Forensic evidence packs
-- Compliance (152-FZ, GDPR, ISO 27001)
+- Compliance (152-ФЗ, GDPR, ISO 27001)
 
-**Realistic coverage:** ≥95% of typical user actions with documented gaps.
-
----
-
-## 3. Threat model
-
-| Actor | Mitigation |
-|-------|------------|
-| Standard user | ACL + Service SYSTEM + encrypted logs |
-| Local admin | Minifilter + IT USB + BitLocker |
-| Offline attack | BitLocker |
-| Log file leak | Split DEK (TPM ⊕ USB), server escrow |
-| Log tampering | HMAC hash chain + server anchor |
+**Реалистичное покрытие:** ≥95% типичных действий пользователя с задокументированными пробелами.
 
 ---
 
-## 4. Collection tiers
+## 3. Модель угроз
 
-### L1 — Real-time (always)
-- Session: login/logout/lock/unlock/idle/RDP (4624, 4634, 4800, 4801)
-- Process: ETW Kernel-Process, parent chain, command line, SHA256 (selective)
-- Foreground: Application Sessions, poll 3–5 sec
+| Актор | Меры |
+|-------|------|
+| Обычный пользователь | ACL + служба SYSTEM + шифрованные логи |
+| Локальный admin | Minifilter + IT USB + BitLocker |
+| Offline-атака | BitLocker |
+| Утечка файла лога | Split DEK (TPM ⊕ USB), escrow на сервере |
+| Подмена лога | HMAC-цепочка + якорь на сервере |
+
+---
+
+## 4. Уровни сбора
+
+### L1 — реальное время (всегда)
+- Сессия: login/logout/lock/unlock/idle/RDP (4624, 4634, 4800, 4801)
+- Процесс: ETW Kernel-Process, цепочка родителя, command line, SHA256 (выборочно)
+- Активное окно: Application Sessions, опрос 3–5 сек
 - USB: insert/remove, VID/PID/serial
 
-### L2 — Near-real-time
-- Files: tiered paths + removable + SACL sensitive paths
-- Network: TCP/UDP, DNS, bytes/PID (30–60 sec)
-- Clipboard: hash only (plaintext opt-in)
-- Print, privilege events, Wi-Fi SSID
+### L2 — почти в реальном времени
+- Файлы: уровни путей + съёмные + SACL чувствительных путей
+- Сеть: TCP/UDP, DNS, bytes/PID (30–60 сек)
+- Буфер обмена: только хеш (plaintext opt-in)
+- Печать, privilege events, Wi-Fi SSID
 
-### L3 — Deep / Forensic (scheduled + trigger)
-- Browser history/downloads (Chrome, Edge, Firefox)
+### L3 — глубокий / forensic (расписание + триггер)
+- История/загрузки браузера (Chrome, Edge, Firefox)
 - Prefetch, Amcache, Jump Lists, UserAssist
-- Registry USB/Run/Tasks, cloud sync logs
+- Реестр USB/Run/Tasks, cloud sync logs
 - Evidence Pack ZIP
 
-### Optional modules (off by default)
-- Screenshots on trigger
-- Keylog (opt-in, legal gate)
-- Screen record (investigation only)
+### Опциональные модули (выключены по умолчанию)
+- Скриншоты по триггеру
+- Keylog (opt-in, юридический gate)
+- Запись экрана (только расследование)
 
 ---
 
-## 5. Alerts
+## 5. Оповещения
 
-| Rule | Severity |
-|------|----------|
-| USB + copy > 10 MB | High |
-| PowerShell -enc / run from TEMP | Critical |
-| Mass delete > 50/min | High |
-| Tamper / stop service attempt | Critical |
-| Denylist process | Critical |
-| Large upload anomalous PID | High |
+| Правило | Серьёзность |
+|---------|-------------|
+| USB + копирование > 10 МБ | High |
+| PowerShell -enc / запуск из TEMP | Critical |
+| Массовое удаление > 50/мин | High |
+| Tamper / попытка остановить службу | Critical |
+| Процесс из denylist | Critical |
+| Крупная загрузка аномальным PID | High |
 
 ---
 
-## 6. Profiles
+## 6. Профили
 
-| Param | Low (2 GB) | Standard | Full |
-|-------|------------|----------|------|
+| Параметр | Low (2 ГБ) | Standard | Full |
+|----------|------------|----------|------|
 | window_poll_sec | 5 | 3 | 2 |
 | network_poll_sec | 60 | 30 | 15 |
 | L3 schedule | weekly/trigger | nightly | nightly |
 | screenshots | off | trigger | trigger |
 | max_log_mb_day | 3 | 10 | 50 |
 
-Auto-detect: RAM ≤ 3072 → Low.
+Автоопределение: ОЗУ ≤ 3072 → Low.
 
 ---
 
-## 7. Architecture
+## 7. Архитектура
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+См. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```
-Client: UserAudit.sys + UserAuditSvc + Watchdog
-Server: Ingest + Escrow + Alerts + Portal (Docker)
-Admin: Dashboard + Reports + Forensic + UserAuditAdmin (IT USB)
+Клиент: UserAudit.sys + UserAuditSvc + Watchdog
+Сервер: Ingest + Escrow + Alerts + Portal (Docker)
+Админка: Dashboard + Reports + Forensic + UserAuditAdmin (IT USB)
 ```
 
 ---
 
-## 8. Event schema (JSONL)
+## 8. Схема события (JSONL)
 
 ```json
 {
   "id": "uuid-v7",
   "seq": 1001,
   "prev_hmac": "...",
+  "hmac": "...",
   "ts": "2026-08-12T10:00:00.000Z",
   "lvl": 1,
   "cat": "session|process|window|file|network|usb|...",
@@ -129,105 +130,105 @@ Admin: Dashboard + Reports + Forensic + UserAuditAdmin (IT USB)
 }
 ```
 
-On disk: AES-256-GCM encrypted (Phase 2+).
+На диске: AES-256-GCM (фаза 2 ✅). Plaintext JSONL больше не пишется.
 
 ---
 
-## 9. Security stack
+## 9. Стек безопасности
 
-### Encryption
-- AES-256-GCM streaming (BCrypt)
-- DEK = K_machine (TPM-sealed) ⊕ K_usb (32-byte binary on IT USB)
-- Server escrow (RSA-OAEP wrap DEK)
-- HMAC hash chain per event
+### Шифрование
+- AES-256-GCM потоково (BCrypt)
+- DEK = K_machine (TPM-sealed) ⊕ K_usb (32 байта на IT USB)
+- Escrow на сервере (RSA-OAEP wrap DEK)
+- HMAC-цепочка на каждое событие
 
 ### Tamper
-- L1: Service LocalSystem, ACL Users=None
-- L2: Watchdog, SCM recovery, tamper events
+- L1: Служба LocalSystem, ACL Users=None
+- L2: Watchdog, SCM recovery, tamper-события
 - L3: GPO, AppLocker/WDAC
-- L4: Minifilter deny delete/rename
-- L5: BitLocker, remote backup
+- L4: Minifilter — запрет delete/rename
+- L5: BitLocker, удалённый backup
 
 ### IT USB
-- Ed25519 challenge-response for uninstall/stop
-- UserAuditKeygen ceremony at deploy
-- Lockdown mode on tamper detect
+- Ed25519 challenge-response для uninstall/stop
+- Церемония UserAuditKeygen при деплое
+- Lockdown mode при детекте tamper
 
 ---
 
-## 10. Performance (2 GB target)
+## 10. Производительность (цель 2 ГБ)
 
-| Metric | Target |
-|--------|--------|
-| RAM | ≤ 15 MB |
-| CPU idle | ≤ 0.3% |
-| Disk/day | ≤ 10 MB |
-| Service delay after boot | 60–120 sec |
-
----
-
-## 11. Server (commercial)
-
-| Service | Role |
+| Метрика | Цель |
 |---------|------|
-| UserAudit.Ingest | mTLS upload, storage |
-| UserAudit.Escrow | DEK vault, rotation |
-| UserAudit.Alerts | Rule engine, notify |
-| UserAudit.Portal | Hosts, timeline, admin |
+| ОЗУ | ≤ 15 МБ |
+| CPU idle | ≤ 0,3% |
+| Диск/день | ≤ 10 МБ |
+| Задержка службы после boot | 60–120 сек |
 
 ---
 
-## 12. Admin suite
+## 11. Сервер (commercial)
 
-- **Dashboard (WPF):** live timeline, 15 hosts, alerts
+| Сервис | Роль |
+|--------|------|
+| UserAudit.Ingest | mTLS upload, хранение |
+| UserAudit.Escrow | Vault DEK, ротация |
+| UserAudit.Alerts | Движок правил, notify |
+| UserAudit.Portal | Хосты, timeline, admin |
+
+---
+
+## 12. Админ-пакет
+
+- **Dashboard (WPF):** live timeline, 15 хостов, alerts
 - **Reports:** Daily Activity, USB, Incident Timeline, Compliance
-- **Forensic:** Evidence pack, UsbForensicAudit integration
-- **UserAuditAdmin:** decrypt, uninstall ceremony
+- **Forensic:** Evidence pack, интеграция UsbForensicAudit
+- **UserAuditAdmin:** расшифровка, церемония uninstall
 
 ---
 
-## 13. Legal (RU)
+## 13. Юридические аспекты (RU)
 
-- Employee notification + monitoring policy
-- 152-FZ if PII in logs
-- Keylog/screenshots: separate consent
-- Retention default 90 days
+- Уведомление сотрудников + политика мониторинга
+- 152-ФЗ при ПДн в логах
+- Keylog/скриншоты: отдельное согласие
+- Хранение по умолчанию 90 дней
 
 ---
 
-## 14. External requirements
+## 14. Внешние требования
 
 - EV code signing
-- Microsoft driver signing (HLK) for UserAudit.sys
-- Server (VPS/on-prem)
-- IT USB with org key
-- BitLocker on pilot laptops
+- Подпись драйвера Microsoft (HLK) для UserAudit.sys
+- Сервер (VPS/on-prem)
+- IT USB с org key
+- BitLocker на пилотных ноутбуках
 
 ---
 
-## 15. Integration
+## 15. Интеграции
 
-| Project | Reuse |
-|---------|-------|
+| Проект | Переиспользование |
+|--------|-------------------|
 | UsbForensicAudit | USB parsers, Excel/PDF, WlanApi |
 | AutoConfigSec | auditpol, registry audit GPO prep |
 
 ---
 
-## 16. Acceptance criteria (Commercial v1.0 RC)
+## 16. Критерии приёмки (Commercial v1.0 RC)
 
-1. L1+L2+L3 by profile; RAM ≤15 MB on 2 GB
-2. Admin cannot delete logs without IT USB (driver)
-3. Leaked log file unreadable without escrow
-4. Portal shows all pilot hosts; alerts <60 sec
+1. L1+L2+L3 по профилю; ОЗУ ≤15 МБ на 2 ГБ
+2. Admin не удаляет логи без IT USB (драйвер)
+3. Утечка файла лога нечитаема без escrow
+4. Портал показывает все пилотные хосты; alerts <60 сек
 5. WPF + Excel/PDF + Forensic pack
 6. MSI silent install + docs
-7. 24h soak test pass on 2 GB VM
+7. 24ч soak test на VM 2 ГБ
 
 ---
 
-## 17. Roadmap
+## 17. Дорожная карта
 
-See [ROADMAP.md](ROADMAP.md) — Phases 0–10.
+См. [ROADMAP.md](ROADMAP.md) — фазы 0–10.
 
-**Current:** Phase 0 complete → Phase 1 (L1 collectors) next.
+**Текущее состояние:** фазы 0–2 завершены → **дальше фаза 3** (L2 и профили).

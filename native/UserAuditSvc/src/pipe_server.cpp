@@ -7,7 +7,7 @@
 
 namespace useraudit {
 
-PipeIngestServer::PipeIngestServer(JsonlWriter& writer) : writer_(writer) {}
+PipeIngestServer::PipeIngestServer(EncryptedLogWriter& writer) : writer_(writer) {}
 
 PipeIngestServer::~PipeIngestServer() {
     stop();

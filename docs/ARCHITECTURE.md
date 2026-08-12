@@ -1,61 +1,61 @@
-# UserActivityAudit — System Architecture
+# UserActivityAudit — Архитектура системы
 
-Commercial Production v1.0. See [ANALYTICS.md](../ANALYTICS.md) for full specification.
+Коммерческая версия 1.0. Полная спецификация — в [ANALYTICS.md](../ANALYTICS.md).
 
 ---
 
-## High-level diagram
+## Общая схема
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         CLIENT (each laptop)                             │
+│                         КЛИЕНТ (каждый ноутбук)                          │
 │  ┌──────────────┐   ┌──────────────────────────────────────────────┐   │
 │  │ UserAudit.sys│   │ UserAudit.exe (LocalSystem)                  │   │
-│  │ (minifilter) │◄──│ L1/L2 + pipe; spawns --user-agent per session │   │
+│  │ (minifilter) │◄──│ L1/L2 + pipe; запускает --user-agent/сессию  │   │
 │  └──────────────┘   └──────────────────────────────────────────────┘   │
 │         │                              │                                 │
 │         │         ┌────────────────────┘                                 │
 │         │         ▼                                                      │
-│         │    Encrypted JSONL (%ProgramData%\UserAudit\logs\)             │
+│         │    Зашифрованный JSONL (%ProgramData%\UserAudit\logs\)         │
 │         │         │                                                      │
-│  UserAuditWatchdog.exe (monitor + restart)                              │
+│  UserAuditWatchdog.exe (монитор + перезапуск)                           │
 └─────────────────┼───────────────────────────────────────────────────────┘
-                  │ TLS 1.3 + mTLS (batch)
+                  │ TLS 1.3 + mTLS (пакетами)
                   ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                              SERVER                                      │
-│  Ingest API ──► Log Store    Escrow Vault ──► DEK wrap/unwrap           │
+│                              СЕРВЕР                                      │
+│  Ingest API ──► Log Store    Escrow Vault ──► wrap/unwrap DEK           │
 │       │              │              │                                    │
 │       └──────► Alert Engine ◄───────┘                                    │
 │                      │                                                   │
-│               Web Portal (timeline, hosts, alerts)                       │
+│               Web Portal (timeline, хосты, alerts)                       │
 └─────────────────────────────────────────────────────────────────────────┘
                   ▲
-                  │ decrypt / reports
+                  │ расшифровка / отчёты
 ┌─────────────────┴───────────────────────────────────────────────────────┐
-│  ADMIN WORKSTATION (C#)                                                  │
+│  РАБОЧАЯ СТАНЦИЯ АДМИНА (C#)                                             │
 │  UserAudit.Dashboard │ Reports │ Forensic │ UserAuditAdmin (IT USB)     │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Repository layout
+## Структура репозитория
 
 ```
 UserActivityAudit/
-├── native/                 # C++20 — client only
-│   ├── UserAuditSvc/       # Windows Service + collectors
+├── native/                 # C++20 — только клиент
+│   ├── UserAuditSvc/       # Служба Windows + сборщики
 │   ├── UserAuditWatchdog/
-│   ├── UserAuditFilter/      # Kernel minifilter (Phase 5) → builds UserAudit.sys
-│   ├── UserAuditAdmin/     # IT authorization tool
+│   ├── UserAuditFilter/    # Minifilter ядра (фаза 5) → UserAudit.sys
+│   ├── UserAuditAdmin/     # IT-инструмент авторизации
 │   └── UserAuditKeygen/
 ├── server/                 # .NET 10 — backend
 │   ├── UserAudit.Ingest/
 │   ├── UserAudit.Escrow/
 │   ├── UserAudit.Alerts/
 │   └── UserAudit.Portal/
-├── admin/                  # .NET 10 — operator tools
+├── admin/                  # .NET 10 — инструменты оператора
 │   ├── UserAudit.Dashboard/
 │   ├── UserAudit.Reports/
 │   ├── UserAudit.Forensic/
@@ -67,48 +67,71 @@ UserActivityAudit/
 
 ---
 
-## Collection tiers
+## Уровни сбора
 
-| Tier | Frequency | Examples |
-|------|-----------|----------|
-| **L1** | Real-time | Session, process ETW, foreground, USB |
-| **L2** | Periodic | Files, network, clipboard hash, print |
-| **L3** | Scheduled / trigger | Browser, Prefetch, registry, evidence pack |
+| Уровень | Частота | Примеры |
+|---------|---------|---------|
+| **L1** | Реальное время | Сессия, процесс ETW, активное окно, USB |
+| **L2** | Периодически | Файлы, сеть, хеш буфера обмена, печать |
+| **L3** | По расписанию / триггер | Браузер, Prefetch, реестр, evidence pack |
 
-Profiles (`Low` / `Standard` / `Full`) control poll intervals and enabled modules.
+Профили (`Low` / `Standard` / `Full`) задают интервалы опроса и включённые модули.
 
 ---
 
-## Event pipeline (client)
+## Конвейер событий (клиент)
 
 ```
-Collectors → EventQueue (ring buffer) → Serializer → CryptoWriter → Disk
+Сборщики → EventQueue (кольцевой буфер) → Serializer → EncryptedLogWriter → Диск
                 ↓
-           AlertEngine (local rules) → UploadClient → Server
+           AlertEngine (локальные правила) → UploadClient → Сервер
 ```
 
 ---
 
-## Security layers
+## Слои безопасности
 
-| Layer | Component |
-|-------|-----------|
-| Confidentiality | AES-256-GCM, DEK = TPM ⊕ USB, server escrow |
-| Integrity | HMAC hash chain, server anchor |
-| Tamper (user) | ACL + Service SYSTEM |
-| Tamper (admin) | Minifilter + IT USB Ed25519 |
+| Слой | Компонент |
+|------|-----------|
+| Конфиденциальность | AES-256-GCM, DEK = TPM ⊕ USB, escrow на сервере |
+| Целостность | HMAC-цепочка, якорь на сервере |
+| Tamper (пользователь) | ACL + служба SYSTEM |
+| Tamper (админ) | Minifilter + IT USB Ed25519 |
 | Offline | BitLocker |
-| Transport | TLS 1.3 + mTLS + cert pinning |
+| Транспорт | TLS 1.3 + mTLS + cert pinning |
 
 ---
 
-## Event schema (JSONL, pre-encryption)
+## Шифрование логов (фаза 2, реализовано)
+
+1. Сборщик формирует JSON-событие (поля `id`, `ts`, `cat`, `act` и т.д.).
+2. **HashChain** добавляет `seq`, `prev_hmac`, `hmac` — связь событий в цепочку.
+3. **EncryptedLogWriter** шифрует строку AES-256-GCM (ключ DEK из **KeyManager**).
+4. На диск пишется строка вида `v1:<base64>` в файл `YYYY-MM-DD.jsonl.enc`.
+
+Ключи:
+
+| Файл | Назначение |
+|------|------------|
+| `%ProgramData%\UserAudit\keys\master.key.dpapi` | DEK + HMAC key, обёрнуты DPAPI (LocalMachine) |
+| `%ProgramData%\UserAudit\keys\chain.state` | Номер последнего события и последний HMAC |
+
+Расшифровка на том же ПК (admin):
+
+```powershell
+UserAudit.exe --decrypt --date 2026-08-12 --verify
+```
+
+---
+
+## Схема события (JSONL, до шифрования)
 
 ```json
 {
   "id": "uuid-v7",
   "seq": 1001,
   "prev_hmac": "...",
+  "hmac": "...",
   "ts": "2026-08-12T10:00:00.000Z",
   "lvl": 1,
   "cat": "session|process|window|file|network|usb|clipboard|print|registry|browser|alert|tamper",
@@ -124,46 +147,46 @@ Collectors → EventQueue (ring buffer) → Serializer → CryptoWriter → Disk
 }
 ```
 
-On disk: AES-256-GCM encrypted blobs (Phase 2+).
+На диске: зашифрованные blob AES-256-GCM (не plaintext).
 
 ---
 
-## Technology stack
+## Стек технологий
 
-| Layer | Stack |
-|-------|-------|
-| Client agent | C++20, Win32, BCrypt (CNG), ETW, WMI |
-| Driver | WDK, minifilter (FltMgr) |
-| Server | .NET 10, ASP.NET Core, Docker |
-| Admin | .NET 10, WPF |
+| Слой | Стек |
+|------|------|
+| Агент | C++20, Win32, BCrypt (CNG), ETW, WMI |
+| Драйвер | WDK, minifilter (FltMgr) |
+| Сервер | .NET 10, ASP.NET Core, Docker |
+| Админка | .NET 10, WPF |
 | CI | GitHub Actions, MSVC 2022 |
 
 ---
 
-## Performance targets (2 GB RAM — Low profile)
+## Целевые показатели (2 ГБ ОЗУ — профиль Low)
 
-| Metric | Target |
-|--------|--------|
-| Agent RAM | ≤ 15 MB |
-| CPU idle | ≤ 0.3% |
-| Disk/day | ≤ 10 MB |
-| Service start delay | 60–120 sec after boot |
-
----
-
-## External dependencies (pilot)
-
-- EV code signing certificate (agent + admin)
-- Microsoft driver signing (UserAudit.sys)
-- Server host (VPS or on-prem) for Phase 6+
-- IT USB with org Ed25519 key
-- BitLocker on all pilot laptops
+| Метрика | Цель |
+|---------|------|
+| ОЗУ агента | ≤ 15 МБ |
+| CPU idle | ≤ 0,3% |
+| Диск/день | ≤ 10 МБ |
+| Задержка старта службы | 60–120 сек после boot |
 
 ---
 
-## Integration points
+## Внешние зависимости (пилот)
 
-| Existing project | Reuse |
-|------------------|-------|
+- EV-сертификат подписи кода (агент + админка)
+- Подпись драйвера Microsoft (UserAudit.sys)
+- Хост сервера (VPS или on-prem) — с фазы 6
+- IT USB с org Ed25519 key
+- BitLocker на всех пилотных ноутбуках
+
+---
+
+## Интеграции
+
+| Проект | Переиспользование |
+|--------|-------------------|
 | UsbForensicAudit | USB registry parsers, Excel/PDF, WlanApi |
 | AutoConfigSec | Advanced Audit Policy, auditpol setup |

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "useraudit/jsonl_writer.hpp"
+#include "useraudit/event_sink.hpp"
 
 #include <atomic>
 #include <string>
@@ -10,7 +10,7 @@ namespace useraudit {
 
 class ProcessCollector {
 public:
-    ProcessCollector(JsonlWriter& writer, std::string hostname);
+    ProcessCollector(EventSink& writer, std::string hostname);
     ~ProcessCollector();
 
     ProcessCollector(const ProcessCollector&) = delete;
@@ -24,7 +24,7 @@ public:
 private:
     void trace_thread_main();
 
-    JsonlWriter& writer_;
+    EventSink& writer_;
     std::string hostname_;
     std::thread trace_thread_;
     volatile bool* stop_flag_ = nullptr;

@@ -1,3 +1,4 @@
+#include "useraudit/decrypt_tool.hpp"
 #include "useraudit/event_loop.hpp"
 #include "useraudit/service_host.hpp"
 #include "useraudit/user_agent_mode.hpp"
@@ -23,7 +24,8 @@ void print_usage() {
     std::wcerr << L"Usage:\n"
                << L"  UserAudit.exe              Run audit service (or dev console mode)\n"
                << L"  UserAudit.exe --install    Install Windows service (admin)\n"
-               << L"  UserAudit.exe --uninstall  Remove Windows service (admin)\n";
+               << L"  UserAudit.exe --uninstall  Remove Windows service (admin)\n"
+               << L"  UserAudit.exe --decrypt    Decrypt audit logs to stdout\n";
 }
 
 }  // namespace
@@ -31,6 +33,10 @@ void print_usage() {
 int wmain(int argc, wchar_t** argv) {
     if (has_argument(argc, argv, L"--user-agent")) {
         return useraudit::run_user_agent_mode(argc, argv);
+    }
+
+    if (has_argument(argc, argv, L"--decrypt")) {
+        return useraudit::run_decrypt_mode(argc, argv);
     }
 
     if (argc >= 2) {

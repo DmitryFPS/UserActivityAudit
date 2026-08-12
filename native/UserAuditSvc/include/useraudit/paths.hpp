@@ -9,6 +9,12 @@ namespace useraudit {
 // Log directory: %ProgramData%\UserAudit\logs
 std::filesystem::path resolve_log_directory();
 
+// Key material: %ProgramData%\UserAudit\keys
+std::filesystem::path resolve_keys_directory();
+
+// Hash chain state: %ProgramData%\UserAudit\keys\chain.state
+std::filesystem::path resolve_chain_state_path();
+
 std::string get_hostname_utf8();
 
 }  // namespace useraudit

@@ -1,38 +1,38 @@
 # UserActivityAudit
 
-Commercial-grade user activity audit system for Windows 10/11.
+Коммерческая система аудита действий пользователя для Windows 10/11.
 
-- **Client**: C++20 Windows Service (L1/L2/L3 collectors, encrypted logs, tamper protection)
-- **Server**: .NET 10 — ingest, key escrow, alerts, web portal
-- **Admin**: .NET 10 — WPF dashboard, Excel/PDF reports, forensic tools
+- **Клиент**: служба Windows на C++20 (сборщики L1/L2/L3, шифрованные логи, защита от подмены)
+- **Сервер**: .NET 10 — приём логов, escrow ключей, оповещения, веб-портал
+- **Админка**: .NET 10 — WPF-дашборд, отчёты Excel/PDF, forensic-инструменты
 
-Pilot deployment: 15 laptops (including 2 GB RAM machines).
+Пилотное развёртывание: 15 ноутбуков (в том числе с 2 ГБ ОЗУ).
 
-## Documentation
+## Документация
 
-| Document | Description |
-|----------|-------------|
-| [ANALYTICS.md](ANALYTICS.md) | Full product specification |
-| [ROADMAP.md](ROADMAP.md) | Development phases 0–10 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
-| [docs/BUILD.md](docs/BUILD.md) | Build instructions |
-| [docs/SETUP.md](docs/SETUP.md) | IDEA, service, Security log |
+| Документ | Описание |
+|----------|----------|
+| [ANALYTICS.md](ANALYTICS.md) | Полная спецификация продукта |
+| [ROADMAP.md](ROADMAP.md) | Фазы разработки 0–10 |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Архитектура системы |
+| [docs/BUILD.md](docs/BUILD.md) | Сборка |
+| [docs/SETUP.md](docs/SETUP.md) | Установка, служба, расшифровка логов |
 
-## Build (Phase 0+)
+## Сборка (фаза 0+)
 
-### Native agent (Windows)
+### Агент (Windows)
 
 ```powershell
 cmake -S native -B build/native -G "Visual Studio 17 2022" -A x64
 cmake --build build/native --config Release
 ```
 
-Output: `UserAudit.exe` (single binary — service + internal user-agent mode).
+Результат: `UserAudit.exe` — один файл (служба + внутренний user-agent).
 
-### Server & Admin (.NET 10)
+### Сервер и админка (.NET 10)
 
-Coming in Phase 6–7.
+Появятся в фазах 6–7.
 
-## License
+## Лицензия
 
-Private / internal use. All rights reserved.
+Частное / внутреннее использование. Все права защищены.

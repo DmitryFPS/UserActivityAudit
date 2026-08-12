@@ -19,7 +19,7 @@ alwaysApply: true
 ## Development workflow
 - Work **one ROADMAP phase at a time**. Do not skip ahead.
 - Each module: production error handling, config-driven, unit tests where applicable.
-- Code comments: English. User-facing docs: Russian.
+- Code comments: English. User-facing docs and git commit messages: Russian.
 - Update ROADMAP.md when a phase/sprint is completed.
 - Minimize diff scope; match existing conventions.
 

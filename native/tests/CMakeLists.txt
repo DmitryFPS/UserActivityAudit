@@ -27,3 +27,39 @@ if(MSVC)
 endif()
 
 add_test(NAME test_usb_helpers COMMAND test_usb_helpers)
+
+add_executable(test_log_crypto
+    test_log_crypto.cpp
+    ../UserAuditSvc/src/log_crypto.cpp
+    ../UserAuditSvc/src/crypto_aes_gcm.cpp
+    ../UserAuditSvc/src/crypto_base64.cpp
+)
+
+target_include_directories(test_log_crypto PRIVATE
+    ../UserAuditSvc/include
+)
+
+target_link_libraries(test_log_crypto PRIVATE Bcrypt Crypt32)
+
+if(MSVC)
+    target_compile_options(test_log_crypto PRIVATE /W4 /permissive-)
+endif()
+
+add_test(NAME test_log_crypto COMMAND test_log_crypto)
+
+add_executable(test_hash_chain
+    test_hash_chain.cpp
+    ../UserAuditSvc/src/hash_chain.cpp
+)
+
+target_include_directories(test_hash_chain PRIVATE
+    ../UserAuditSvc/include
+)
+
+target_link_libraries(test_hash_chain PRIVATE Bcrypt)
+
+if(MSVC)
+    target_compile_options(test_hash_chain PRIVATE /W4 /permissive-)
+endif()
+
+add_test(NAME test_hash_chain COMMAND test_hash_chain)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "useraudit/jsonl_writer.hpp"
+#include "useraudit/event_sink.hpp"
 
 #include <atomic>
 #include <string>
@@ -10,7 +10,7 @@ namespace useraudit {
 
 class UsbCollector {
 public:
-    UsbCollector(JsonlWriter& writer, std::string hostname);
+    UsbCollector(EventSink& writer, std::string hostname);
     ~UsbCollector();
 
     UsbCollector(const UsbCollector&) = delete;
@@ -24,7 +24,7 @@ public:
 private:
     void wmi_thread_main();
 
-    JsonlWriter& writer_;
+    EventSink& writer_;
     std::string hostname_;
     std::thread wmi_thread_;
     volatile bool* stop_flag_ = nullptr;

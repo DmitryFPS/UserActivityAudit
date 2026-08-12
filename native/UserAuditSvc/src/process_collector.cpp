@@ -25,7 +25,7 @@ constexpr wchar_t kSessionName[] = L"UserAuditKernelProcess";
 
 struct TraceContext {
     ProcessCollector* collector = nullptr;
-    JsonlWriter* writer = nullptr;
+    EventSink* writer = nullptr;
     std::string hostname;
 };
 
@@ -116,7 +116,7 @@ bool get_unicode_string_property(PEVENT_RECORD record, const wchar_t* property_n
     return true;
 }
 
-void emit_process_event(JsonlWriter& writer, const std::string& hostname,
+void emit_process_event(EventSink& writer, const std::string& hostname,
                         const std::string& action, unsigned long pid, unsigned long parent_pid,
                         const std::wstring& image_name, const std::wstring& image_path) {
     AuditEvent event;
@@ -176,7 +176,7 @@ void WINAPI process_event_callback(PEVENT_RECORD record) {
 
 }  // namespace
 
-ProcessCollector::ProcessCollector(JsonlWriter& writer, std::string hostname)
+ProcessCollector::ProcessCollector(EventSink& writer, std::string hostname)
     : writer_(writer), hostname_(std::move(hostname)) {}
 
 ProcessCollector::~ProcessCollector() {

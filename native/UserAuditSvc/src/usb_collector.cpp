@@ -154,7 +154,7 @@ bool query_pnp_device_id_for_drive(IWbemServices* services, const std::wstring& 
 
 }  // namespace
 
-UsbCollector::UsbCollector(JsonlWriter& writer, std::string hostname)
+UsbCollector::UsbCollector(EventSink& writer, std::string hostname)
     : writer_(writer), hostname_(std::move(hostname)) {}
 
 UsbCollector::~UsbCollector() {

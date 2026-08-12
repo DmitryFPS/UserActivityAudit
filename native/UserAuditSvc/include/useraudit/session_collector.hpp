@@ -1,6 +1,6 @@
 #pragma once
 
-#include "useraudit/jsonl_writer.hpp"
+#include "useraudit/event_sink.hpp"
 
 #include <functional>
 #include <windows.h>
@@ -12,7 +12,7 @@ class SessionCollector {
 public:
     using SessionObserver = std::function<void(const std::string& action, const std::string& user)>;
 
-    SessionCollector(JsonlWriter& writer, std::string hostname);
+    SessionCollector(EventSink& writer, std::string hostname);
     ~SessionCollector();
 
     SessionCollector(const SessionCollector&) = delete;
@@ -30,7 +30,7 @@ private:
 
     bool handle_event(EVT_HANDLE event_record);
 
-    JsonlWriter& writer_;
+    EventSink& writer_;
     std::string hostname_;
     SessionObserver session_observer_;
     EVT_HANDLE subscription_ = nullptr;

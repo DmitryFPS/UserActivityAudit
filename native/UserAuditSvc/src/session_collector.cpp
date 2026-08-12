@@ -88,7 +88,7 @@ std::string map_session_action(int event_id) {
 
 }  // namespace
 
-SessionCollector::SessionCollector(JsonlWriter& writer, std::string hostname)
+SessionCollector::SessionCollector(EventSink& writer, std::string hostname)
     : writer_(writer), hostname_(std::move(hostname)) {}
 
 SessionCollector::~SessionCollector() {

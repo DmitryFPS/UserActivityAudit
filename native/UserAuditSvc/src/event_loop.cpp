@@ -1,6 +1,6 @@
 #include "useraudit/event_loop.hpp"
 
-#include "useraudit/jsonl_writer.hpp"
+#include "useraudit/encrypted_log_writer.hpp"
 #include "useraudit/paths.hpp"
 #include "useraudit/pipe_server.hpp"
 #include "useraudit/process_collector.hpp"
@@ -18,7 +18,11 @@ namespace useraudit {
 
 void run_event_loop(volatile bool& stop_requested) {
     const std::string hostname = get_hostname_utf8();
-    JsonlWriter writer(resolve_log_directory(), hostname);
+    EncryptedLogWriter writer(resolve_log_directory(), hostname);
+    if (!writer.initialize()) {
+        OutputDebugStringW(L"[UserAuditSvc] EncryptedLogWriter failed to initialize keys\n");
+    }
+
     PipeIngestServer pipe_server(writer);
     SessionAgentManager session_agents;
 

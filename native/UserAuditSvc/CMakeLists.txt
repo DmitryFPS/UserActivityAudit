@@ -4,6 +4,13 @@ add_executable(UserAudit
     src/event_loop.cpp
     src/event_serializer.cpp
     src/jsonl_writer.cpp
+    src/crypto_base64.cpp
+    src/crypto_aes_gcm.cpp
+    src/key_manager.cpp
+    src/hash_chain.cpp
+    src/log_crypto.cpp
+    src/encrypted_log_writer.cpp
+    src/decrypt_tool.cpp
     src/paths.cpp
     src/session_collector.cpp
     src/process_collector.cpp
@@ -34,6 +41,8 @@ target_compile_definitions(UserAudit PRIVATE
 
 target_link_libraries(UserAudit PRIVATE
     Advapi32
+    Bcrypt
+    Crypt32
     Ole32
     Shell32
     Psapi

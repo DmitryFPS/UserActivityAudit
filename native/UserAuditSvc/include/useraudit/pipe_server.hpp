@@ -1,6 +1,6 @@
 #pragma once
 
-#include "useraudit/jsonl_writer.hpp"
+#include "useraudit/encrypted_log_writer.hpp"
 
 #include <windows.h>
 
@@ -11,7 +11,7 @@ namespace useraudit {
 
 class PipeIngestServer {
 public:
-    explicit PipeIngestServer(JsonlWriter& writer);
+    explicit PipeIngestServer(EncryptedLogWriter& writer);
     ~PipeIngestServer();
 
     PipeIngestServer(const PipeIngestServer&) = delete;
@@ -24,7 +24,7 @@ private:
     void accept_loop();
     void handle_client(HANDLE pipe);
 
-    JsonlWriter& writer_;
+    EncryptedLogWriter& writer_;
     std::thread accept_thread_;
     std::atomic<bool> running_{false};
     HANDLE stop_event_ = nullptr;
