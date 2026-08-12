@@ -67,6 +67,26 @@ std::filesystem::path resolve_chain_state_path() {
     return resolve_keys_directory() / L"chain.state";
 }
 
+std::filesystem::path resolve_data_root() {
+    PWSTR program_data = nullptr;
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, nullptr, &program_data)) &&
+        program_data != nullptr) {
+        std::filesystem::path path = program_data;
+        CoTaskMemFree(program_data);
+        return path / L"UserAudit";
+    }
+
+    return std::filesystem::path(L"C:\\ProgramData\\UserAudit");
+}
+
+std::filesystem::path resolve_outbox_directory() {
+    return resolve_data_root() / L"outbox";
+}
+
+std::filesystem::path resolve_upload_state_path() {
+    return resolve_keys_directory() / L"upload.state";
+}
+
 std::string get_hostname_utf8() {
     std::array<wchar_t, MAX_COMPUTERNAME_LENGTH + 1> buffer{};
     DWORD size = static_cast<DWORD>(buffer.size());

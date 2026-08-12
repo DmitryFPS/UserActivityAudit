@@ -92,22 +92,22 @@
 
 ---
 
-## Фаза 4 — Базовая защита и выгрузка
+## Фаза 4 — Базовая защита и выгрузка ✅
 
 **Цель:** ACL, watchdog, детект tamper, клиент выгрузки на сервер.
 
 | Модуль | Примечание |
 |--------|------------|
 | AclGuard | ACL ProgramData, периодическая самопроверка |
-| Watchdog | Перезапуск службы при сбое |
-| TamperCollector | Security events + локальный deny log |
-| UploadClient | Пакетная выгрузка TLS 1.3 на ingest API |
+| Watchdog | `UserAuditWatchdog.exe` + SCM recovery |
+| TamperCollector | Security/System events + локальный deny log |
+| UploadClient | Пакетная выгрузка TLS (WinHTTP); mock → outbox |
 
 ### Критерии приёмки
-- [ ] Обычный пользователь не может удалить `%ProgramData%\UserAudit\`
-- [ ] Попытка tamper → событие `tamper.attempt_denied`
-- [ ] Watchdog перезапускает службу за 60 сек
-- [ ] Зашифрованные blob выгружаются на сервер (или mock в dev)
+- [ ] Обычный пользователь не может удалить `%ProgramData%\UserAudit\` ([docs/TESTING.md](docs/TESTING.md))
+- [x] Попытка tamper → событие `tamper.*` (TamperCollector + AclGuard)
+- [x] Watchdog + SCM recovery перезапускают службу за 60 сек
+- [x] Зашифрованные blob выгружаются в mock outbox (или HTTP ingest)
 
 ---
 
@@ -234,4 +234,4 @@
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** фаза 3 реализована (L2 + профили) → **Дальше:** добить замеры RAM/reboot на VM, затем **фаза 4** (по команде)
+**Текущая фаза:** фаза 4 реализована (ACL, watchdog, tamper, upload mock) → **Дальше:** ручной QA фаз 1–4 на VM, затем **фаза 5** (minifilter)

@@ -158,6 +158,17 @@ bool install_service(const wchar_t* service_name, const wchar_t* display_name,
         L"Commercial user activity audit agent (UserActivityAudit).");
     ChangeServiceConfig2W(service, SERVICE_CONFIG_DESCRIPTION, &desc);
 
+    SC_ACTION actions[3] = {
+        {SC_ACTION_RESTART, 60000},
+        {SC_ACTION_RESTART, 60000},
+        {SC_ACTION_NONE, 0},
+    };
+    SERVICE_FAILURE_ACTIONSW failure{};
+    failure.dwResetPeriod = 86400;
+    failure.cActions = 3;
+    failure.lpsaActions = actions;
+    ChangeServiceConfig2W(service, SERVICE_CONFIG_FAILURE_ACTIONS, &failure);
+
     CloseServiceHandle(service);
     CloseServiceHandle(scm);
     return true;

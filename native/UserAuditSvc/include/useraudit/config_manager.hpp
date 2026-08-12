@@ -32,6 +32,9 @@ struct AgentConfig {
     int file_poll_sec = 15;
     int clipboard_poll_sec = 10;
     std::uint64_t max_log_mb_per_day = 10;
+    std::string ingest_url;
+    std::string mtls_cert_thumbprint;
+    int upload_interval_minutes = 120;
 };
 
 class ConfigManager {
@@ -47,6 +50,9 @@ public:
     [[nodiscard]] int clipboard_poll_sec() const { return config_.clipboard_poll_sec; }
     [[nodiscard]] std::uint64_t max_log_mb_per_day() const { return config_.max_log_mb_per_day; }
     [[nodiscard]] bool collector_enabled(const char* name) const;
+    [[nodiscard]] const std::string& ingest_url() const { return config_.ingest_url; }
+    [[nodiscard]] int upload_interval_minutes() const { return config_.upload_interval_minutes; }
+    [[nodiscard]] const AgentConfig& raw_config() const { return config_; }
 
 private:
     bool parse_file(const std::filesystem::path& path);

@@ -28,6 +28,9 @@ add_executable(UserAudit
     src/usb_helpers.cpp
     src/user_agent_mode.cpp
     src/time_utils.cpp
+    src/acl_guard.cpp
+    src/tamper_collector.cpp
+    src/upload_client.cpp
 )
 
 target_include_directories(UserAudit PRIVATE
@@ -59,6 +62,7 @@ target_link_libraries(UserAudit PRIVATE
     tdh
     iphlpapi
     ws2_32
+    winhttp
 )
 
 if(MSVC)

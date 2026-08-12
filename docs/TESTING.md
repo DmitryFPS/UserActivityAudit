@@ -19,6 +19,7 @@ ctest --test-dir build/native -C Debug --output-on-failure
 | `test_log_crypto` | AES-256-GCM roundtrip |
 | `test_hash_chain` | HMAC-цепочка и детект подмены |
 | `test_config_manager` | config.json, профили Low/Standard/Full |
+| `test_upload_client` | Парсинг server/upload, mock vs HTTP |
 
 ---
 
@@ -161,7 +162,57 @@ Get-Counter '\Process(UserAudit)\% Processor Time' -SampleInterval 1 -MaxSamples
 
 ---
 
-## 8. Устранение проблем
+## 8. Фаза 4 — защита, watchdog, upload
+
+### 8.1 ACL (AclGuard)
+
+Под обычным пользователем (не admin):
+
+```powershell
+Remove-Item -Recurse -Force C:\ProgramData\UserAudit\logs -ErrorAction SilentlyContinue
+```
+
+Ожидание: **Access denied**. Служба (LocalSystem) продолжает писать логи.
+
+### 8.2 Watchdog
+
+```powershell
+# Admin — остановить службу вручную
+sc stop UserAuditSvc
+
+# Запустить watchdog (отдельное окно)
+.\UserAuditWatchdog.exe
+```
+
+Ожидание: в течение **60 сек** служба снова `RUNNING` (watchdog или SCM recovery).
+
+### 8.3 Tamper-события
+
+После `sc stop UserAuditSvc` в логах (после перезапуска):
+
+```powershell
+.\UserAudit.exe --decrypt --verify | Select-String tamper
+```
+
+Ожидание: `"cat":"tamper"` (например `service_stop` или `attempt_denied`).
+
+### 8.4 Upload (mock)
+
+По умолчанию `config.json` содержит `"ingest_url": ".../mock"` — файлы копируются в:
+
+```
+C:\ProgramData\UserAudit\outbox\
+```
+
+Проверка:
+
+```powershell
+dir C:\ProgramData\UserAudit\outbox\
+```
+
+---
+
+## 9. Устранение проблем
 
 | Симптом | Решение |
 |---------|---------|

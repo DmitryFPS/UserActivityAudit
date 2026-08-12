@@ -81,3 +81,22 @@ if(MSVC)
 endif()
 
 add_test(NAME test_config_manager COMMAND test_config_manager)
+
+add_executable(test_upload_client
+    test_upload_client.cpp
+    ../UserAuditSvc/src/config_manager.cpp
+    ../UserAuditSvc/src/upload_client.cpp
+    ../UserAuditSvc/src/paths.cpp
+)
+
+target_include_directories(test_upload_client PRIVATE
+    ../UserAuditSvc/include
+)
+
+target_link_libraries(test_upload_client PRIVATE Ole32 Shell32 winhttp)
+
+if(MSVC)
+    target_compile_options(test_upload_client PRIVATE /W4 /permissive-)
+endif()
+
+add_test(NAME test_upload_client COMMAND test_upload_client)

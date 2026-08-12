@@ -128,6 +128,15 @@ bool extract_uint64(const std::string& json, const std::string& key, std::uint64
     return true;
 }
 
+bool extract_int(const std::string& json, const std::string& key, int& out) {
+    std::uint64_t value = 0;
+    if (!extract_uint64(json, key, value)) {
+        return false;
+    }
+    out = static_cast<int>(value);
+    return true;
+}
+
 bool extract_string_array(const std::string& json, const std::string& key,
                           std::vector<std::string>& out) {
     const std::string needle = "\"" + key + "\"";
@@ -333,6 +342,13 @@ bool parse_agent_config_json(const std::string& json, AgentConfig& out, std::str
         extract_uint64(storage_json, "max_log_mb_per_day", config.max_log_mb_per_day);
     }
 
+    const std::string server_json = extract_object_body(json, "server");
+    if (!server_json.empty()) {
+        extract_quoted_string(server_json, "ingest_url", config.ingest_url);
+        extract_quoted_string(server_json, "mtls_cert_thumbprint", config.mtls_cert_thumbprint);
+        extract_int(server_json, "upload_interval_minutes", config.upload_interval_minutes);
+    }
+
     if (profile_name == "auto") {
         config.profile = detect_profile_from_ram_mb(total_ram_mb());
     } else if (profile_name == "low") {
@@ -418,6 +434,11 @@ bool ConfigManager::write_default_config(const std::filesystem::path& path) cons
     static constexpr char kDefaultConfig[] = R"({
   "version": 1,
   "profile": "auto",
+  "server": {
+    "ingest_url": "https://127.0.0.1:8443/mock",
+    "mtls_cert_thumbprint": "",
+    "upload_interval_minutes": 120
+  },
   "collectors": {
     "session": true,
     "process": true,

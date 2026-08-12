@@ -1,5 +1,6 @@
 #include "useraudit/event_loop.hpp"
 
+#include "useraudit/acl_guard.hpp"
 #include "useraudit/config_manager.hpp"
 #include "useraudit/correlation_tracker.hpp"
 #include "useraudit/encrypted_log_writer.hpp"
@@ -11,6 +12,8 @@
 #include "useraudit/process_collector.hpp"
 #include "useraudit/session_agent_manager.hpp"
 #include "useraudit/session_collector.hpp"
+#include "useraudit/tamper_collector.hpp"
+#include "useraudit/upload_client.hpp"
 #include "useraudit/usb_collector.hpp"
 
 #include <windows.h>
@@ -118,6 +121,24 @@ void run_event_loop(volatile bool& stop_requested) {
         }
     }
 
+    AclGuard acl_guard(writer, hostname);
+    acl_guard.set_stop_flag(&stop_requested);
+    if (!acl_guard.start()) {
+        OutputDebugStringW(L"[UserAuditSvc] AclGuard failed to start\n");
+    }
+
+    TamperCollector tamper_collector(writer, hostname);
+    tamper_collector.set_stop_flag(&stop_requested);
+    if (!tamper_collector.start()) {
+        OutputDebugStringW(L"[UserAuditSvc] TamperCollector failed to start\n");
+    }
+
+    UploadClient upload_client(writer.log_directory(), parse_upload_settings(config.raw_config()));
+    upload_client.set_stop_flag(&stop_requested);
+    if (!upload_client.start()) {
+        OutputDebugStringW(L"[UserAuditSvc] UploadClient failed to start\n");
+    }
+
     auto last_config_check = std::chrono::steady_clock::now();
     while (!stop_requested) {
         const auto now = std::chrono::steady_clock::now();
@@ -131,6 +152,9 @@ void run_event_loop(volatile bool& stop_requested) {
     if (network_collector) {
         network_collector->stop();
     }
+    upload_client.stop();
+    tamper_collector.stop();
+    acl_guard.stop();
     if (file_collector) {
         file_collector->stop();
     }

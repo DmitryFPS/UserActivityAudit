@@ -22,9 +22,16 @@ std::string extract_token(std::string_view source, std::string_view prefix) {
         return {};
     }
     const size_t start = pos + prefix_lower.size();
-    const size_t end = lower.find('&', start);
-    const size_t len = (end == std::string::npos) ? lower.size() - start : end - start;
-    return lower.substr(start, len);
+    const size_t end_amp = lower.find('&', start);
+    const size_t end_bs = lower.find('\\', start);
+    size_t end = lower.size();
+    if (end_amp != std::string::npos) {
+        end = end_amp;
+    }
+    if (end_bs != std::string::npos && end_bs < end) {
+        end = end_bs;
+    }
+    return lower.substr(start, end - start);
 }
 
 }  // namespace

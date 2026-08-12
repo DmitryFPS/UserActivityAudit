@@ -11,12 +11,10 @@ if(NOT WIN32)
     message(FATAL_ERROR "UserActivityAudit native components require Windows.")
 endif()
 
+enable_testing()
+
 add_subdirectory(UserAuditSvc)
+add_subdirectory(UserAuditWatchdog)
 add_subdirectory(tests)
 
-# Phase 5+: add_subdirectory(UserAuditWatchdog)
 # Phase 5+: add_subdirectory(UserAuditFilter)
-# Phase 5+: add_subdirectory(UserAuditAdmin)
-# Phase 5+: add_subdirectory(UserAuditKeygen)
-
-enable_testing()

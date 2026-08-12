@@ -18,6 +18,15 @@ std::filesystem::path resolve_config_path();
 // Hash chain state: %ProgramData%\UserAudit\keys\chain.state
 std::filesystem::path resolve_chain_state_path();
 
+// Data root: %ProgramData%\UserAudit
+std::filesystem::path resolve_data_root();
+
+// Mock upload outbox: %ProgramData%\UserAudit\outbox
+std::filesystem::path resolve_outbox_directory();
+
+// Upload cursor: %ProgramData%\UserAudit\keys\upload.state
+std::filesystem::path resolve_upload_state_path();
+
 std::string get_hostname_utf8();
 
 }  // namespace useraudit
