@@ -4,7 +4,6 @@
 
 #include <functional>
 #include <string>
-#include <string>
 
 namespace useraudit {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "useraudit/jsonl_writer.hpp"
+#include "useraudit/event_sink.hpp"
 
 #include <atomic>
 #include <string>
@@ -10,7 +10,8 @@ namespace useraudit {
 
 class ForegroundCollector {
 public:
-    ForegroundCollector(JsonlWriter& writer, std::string hostname, int poll_interval_sec = 5);
+    ForegroundCollector(EventSink& sink, std::string hostname, unsigned long session_id = 0,
+                        int poll_interval_sec = 5);
     ~ForegroundCollector();
 
     ForegroundCollector(const ForegroundCollector&) = delete;
@@ -25,8 +26,9 @@ private:
     void poll_thread_main();
     bool emit_focus_if_changed();
 
-    JsonlWriter& writer_;
+    EventSink& sink_;
     std::string hostname_;
+    unsigned long session_id_;
     int poll_interval_sec_;
     std::thread poll_thread_;
     volatile bool* stop_flag_ = nullptr;

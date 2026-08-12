@@ -178,7 +178,11 @@ bool SessionCollector::handle_event(EVT_HANDLE event_record) {
 
     event.data["event_id"] = std::to_string(event_id);
 
-    return writer_.write(event);
+    const bool written = writer_.write(event);
+    if (written && session_observer_) {
+        session_observer_(action, event.user);
+    }
+    return written;
 }
 
 bool SessionCollector::start() {

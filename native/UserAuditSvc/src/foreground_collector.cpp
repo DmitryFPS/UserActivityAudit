@@ -60,10 +60,11 @@ std::wstring query_window_title(HWND hwnd) {
 
 }  // namespace
 
-ForegroundCollector::ForegroundCollector(JsonlWriter& writer, std::string hostname,
-                                         int poll_interval_sec)
-    : writer_(writer),
+ForegroundCollector::ForegroundCollector(EventSink& sink, std::string hostname,
+                                         unsigned long session_id, int poll_interval_sec)
+    : sink_(sink),
       hostname_(std::move(hostname)),
+      session_id_(session_id),
       poll_interval_sec_(poll_interval_sec > 0 ? poll_interval_sec : 5) {}
 
 ForegroundCollector::~ForegroundCollector() {
@@ -103,6 +104,7 @@ bool ForegroundCollector::emit_focus_if_changed() {
     event.sev = "info";
     event.host = hostname_;
     event.src = "user32";
+    event.sess = static_cast<int>(session_id_);
     event.data["pid"] = std::to_string(pid);
 
     if (!exe_path.empty()) {
@@ -112,7 +114,7 @@ bool ForegroundCollector::emit_focus_if_changed() {
         event.data["title"] = wide_to_utf8(title);
     }
 
-    return writer_.write(event);
+    return sink_.write(event);
 }
 
 void ForegroundCollector::poll_thread_main() {

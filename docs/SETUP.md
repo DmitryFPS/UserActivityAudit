@@ -32,34 +32,44 @@ cmake --build build/native --config Debug
 
 `SessionCollector` читает канал **Security** (события входа/выхода/блокировки). Обычный пользователь **не имеет** доступа.
 
+```powershell
+cmake --build build/native --config Debug
+# Output (same folder):
+#   UserAuditSvc/Debug/UserAuditSvc.exe
+#   UserAuditUser/Debug/UserAuditUser.exe
+```
+
+> **Важно:** `UserAuditUser.exe` должен лежать **рядом** с `UserAuditSvc.exe`.
+
 ### Production (рекомендуется)
 
-Запуск как **служба Windows** от **LocalSystem**:
-
 ```powershell
-# PowerShell от имени администратора
-cd C:\path\to\build\native\UserAuditSvc\Release
+# PowerShell от имени администратора — оба exe в одной папке
 .\UserAuditSvc.exe --install
 sc start UserAuditSvc
 ```
 
-Проверка:
+Служба автоматически:
+1. Запускает **UserAuditUser.exe** в сессии каждого вошедшего пользователя
+2. Принимает `window.focus` через named pipe `\\.\pipe\UserAudit\events`
+3. Пишет всё в `%ProgramData%\UserAudit\logs\`
+
+### Быстрый тест (Debug)
 
 ```powershell
-sc query UserAuditSvc
-Get-Content "C:\ProgramData\UserAudit\logs\$(Get-Date -Format yyyy-MM-dd).jsonl" -Tail 5
+# Admin PowerShell, оба exe в Debug/
+.\UserAuditSvc.exe
+# Служба поднимет UserAuditUser в текущей сессии
+# Переключите окна — в JSONL появится window.focus
 ```
 
-### Быстрый тест без службы
+### SessionCollector (Security log)
 
-1. PowerShell **от имени администратора**
-2. Запуск Debug-бинарника:
+Требует **LocalSystem** (служба) или **admin** (dev). События `session.login` / `session.lock` и т.д.
 
-```powershell
-.\build\native\UserAuditSvc\Debug\UserAuditSvc.exe
-```
+### ProcessCollector
 
-3. Выполните **Win+L** (блокировка) и войдите снова — в логе должны появиться `session.lock` / `session.login`.
+ETW — работает из службы без доп. настроек.
 
 ### Если Security log пустой
 
@@ -71,14 +81,7 @@ auditpol /set /subcategory:"Logoff" /success:enable
 auditpol /set /subcategory:"Other Logon/Logoff Events" /success:enable
 ```
 
-Увеличьте журнал Security: **gpedit.msc** → Конфигурация Windows → Параметры безопасности → Параметры событий → Security → **Max log size** ≥ 256 MB.
-
-### ProcessCollector и ForegroundCollector
-
-- **Process** (ETW): работает от обычного пользователя; от службы — стабильнее.
-- **Foreground**: работает в сессии пользователя; из **LocalSystem** (служба без UI) **не видит** окна пользователя.
-
-> **Phase 1 ограничение:** foreground из службы LocalSystem может не собирать окна. В Phase 3+ — collector в user-session или hybrid. Для теста `window.focus` запускайте **Debug exe от admin в интерактивной сессии**.
+Увеличьте журнал Security: **gpedit.msc** → … → **Max log size** ≥ 256 MB.
 
 ---
 

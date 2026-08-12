@@ -37,13 +37,13 @@ Commercial Production v1.0. Pilot fleet: 15 laptops.
 | SessionCollector | Event Log 4624, 4634, 4800, 4801 | ✅ Sprint 1 |
 | EventWriter (JSONL) | Plaintext JSONL | ✅ Sprint 1 |
 | ProcessCollector | ETW Microsoft-Windows-Kernel-Process | ✅ Sprint 2 |
-| ForegroundCollector | GetForegroundWindow, poll 5 sec | ✅ Sprint 2 |
+| ForegroundCollector | UserAuditUser.exe in user session → pipe | ✅ Sprint 2b |
 | UsbCollector | WMI Win32_VolumeChangeEvent | Sprint 3 |
 
 ### Acceptance criteria
 - [ ] Service runs as LocalSystem, survives reboot
 - [x] Login event → JSONL `session.login` (SessionCollector)
-- [x] notepad.exe → `process.start` + `window.focus` (dev console / user session)
+- [x] notepad.exe → `process.start` + `window.focus` (via UserAuditUser)
 - [ ] USB insert → `usb.insert`
 - [x] Unit tests for event serialization
 - [ ] RAM ≤ 20 MB (pre-crypto)
@@ -231,4 +231,4 @@ Each phase may split into 2–4 sprints. After each sprint:
 2. ROADMAP checkboxes updated
 3. Brief summary: done / next
 
-**Current phase:** Phase 1 (Sprint 2 done) → **Next: Phase 1 Sprint 3** (UsbCollector)
+**Current phase:** Phase 1 (Sprint 2b done) → **Next: Phase 1 Sprint 3** (UsbCollector, on command)

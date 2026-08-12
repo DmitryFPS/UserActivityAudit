@@ -75,4 +75,19 @@ bool JsonlWriter::write(const AuditEvent& event) {
     return stream_.good();
 }
 
+bool JsonlWriter::write_raw_json_line(const std::string& json_line) {
+    if (json_line.empty()) {
+        return false;
+    }
+
+    std::lock_guard lock(mutex_);
+    if (!ensure_open_for_today()) {
+        return false;
+    }
+
+    stream_ << json_line << '\n';
+    stream_.flush();
+    return stream_.good();
+}
+
 }  // namespace useraudit

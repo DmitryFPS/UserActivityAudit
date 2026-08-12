@@ -19,7 +19,9 @@ cmake --build build/native --config Release
 cmake --build build/native --config Debug
 ```
 
-Output: `build/native/UserAuditSvc/Release/UserAuditSvc.exe`
+Output:
+- `build/native/UserAuditSvc/Release/UserAuditSvc.exe`
+- `build/native/UserAuditUser/Release/UserAuditUser.exe` (must be alongside UserAuditSvc)
 
 ## Run unit tests
 

@@ -7,7 +7,8 @@ add_executable(UserAuditSvc
     src/paths.cpp
     src/session_collector.cpp
     src/process_collector.cpp
-    src/foreground_collector.cpp
+    src/pipe_server.cpp
+    src/session_agent_manager.cpp
     src/time_utils.cpp
 )
 
@@ -31,6 +32,8 @@ target_link_libraries(UserAuditSvc PRIVATE
     Ole32
     Shell32
     Psapi
+    Userenv
+    Wtsapi32
     wevtapi
     rpcrt4
     tdh
