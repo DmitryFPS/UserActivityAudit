@@ -3,6 +3,7 @@
 #include "useraudit/event_sink.hpp"
 
 #include <atomic>
+#include <cstdint>
 #include <string>
 #include <thread>
 
@@ -29,7 +30,7 @@ private:
     std::thread trace_thread_;
     volatile bool* stop_flag_ = nullptr;
     std::atomic<bool> running_{false};
-    unsigned long session_handle_ = 0;
+    std::uint64_t session_id_value_{0};
     unsigned long long trace_handle_ = ~0ULL;
 };
 

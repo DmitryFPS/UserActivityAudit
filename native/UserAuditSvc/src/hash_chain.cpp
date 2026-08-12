@@ -1,5 +1,6 @@
 #include "useraudit/hash_chain.hpp"
 
+#include <windows.h>
 #include <bcrypt.h>
 
 #include <fstream>

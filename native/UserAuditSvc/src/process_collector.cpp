@@ -76,7 +76,8 @@ bool get_uint32_property(PEVENT_RECORD record, const wchar_t* property_name, uns
     }
 
     DWORD value = 0;
-    if (TdhGetProperty(record, 0, nullptr, 1, &descriptor, property_size, &value) != ERROR_SUCCESS) {
+    if (TdhGetProperty(record, 0, nullptr, 1, &descriptor, property_size,
+                       reinterpret_cast<PBYTE>(&value)) != ERROR_SUCCESS) {
         return false;
     }
 
@@ -195,17 +196,20 @@ void ProcessCollector::trace_thread_main() {
     properties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
     properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 
-    if (StartTraceW(&session_handle_, kSessionName, properties) != ERROR_SUCCESS) {
+    CONTROLTRACE_ID session_id{};
+    if (StartTraceW(&session_id, kSessionName, properties) != ERROR_SUCCESS) {
         OutputDebugStringW(L"[UserAuditSvc] ProcessCollector StartTrace failed\n");
         running_.store(false);
         return;
     }
+    session_id_value_ = session_id;
 
-    if (EnableTraceEx2(session_handle_, &kKernelProcessProvider, EVENT_CONTROL_CODE_ENABLE_PROVIDER,
-                      TRACE_LEVEL_INFORMATION, 0, 0, 0, nullptr) != ERROR_SUCCESS) {
+    if (EnableTraceEx2(static_cast<TRACEHANDLE>(session_id), &kKernelProcessProvider,
+                      EVENT_CONTROL_CODE_ENABLE_PROVIDER, TRACE_LEVEL_INFORMATION, 0, 0, 0,
+                      nullptr) != ERROR_SUCCESS) {
         OutputDebugStringW(L"[UserAuditSvc] ProcessCollector EnableTraceEx2 failed\n");
-        ControlTraceW(session_handle_, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
-        session_handle_ = 0;
+        ControlTraceW(session_id, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
+        session_id_value_ = 0;
         running_.store(false);
         return;
     }
@@ -218,8 +222,8 @@ void ProcessCollector::trace_thread_main() {
     trace_handle_ = OpenTraceW(&logfile);
     if (trace_handle_ == INVALID_PROCESSTRACE_HANDLE) {
         OutputDebugStringW(L"[UserAuditSvc] ProcessCollector OpenTrace failed\n");
-        ControlTraceW(session_handle_, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
-        session_handle_ = 0;
+        ControlTraceW(session_id, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
+        session_id_value_ = 0;
         running_.store(false);
         return;
     }
@@ -232,8 +236,8 @@ void ProcessCollector::trace_thread_main() {
     ZeroMemory(properties, sizeof(EVENT_TRACE_PROPERTIES));
     properties->Wnode.BufferSize = static_cast<ULONG>(buffer_size);
     properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
-    ControlTraceW(session_handle_, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
-    session_handle_ = 0;
+    ControlTraceW(session_id, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
+    session_id_value_ = 0;
     running_.store(false);
 }
 
@@ -261,15 +265,16 @@ void ProcessCollector::stop() {
         trace_handle_ = ~0ULL;
     }
 
-    if (session_handle_ != 0) {
+    if (session_id_value_ != 0) {
         const size_t buffer_size = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(kSessionName);
         auto buffer = std::make_unique<BYTE[]>(buffer_size);
         auto* properties = reinterpret_cast<EVENT_TRACE_PROPERTIES*>(buffer.get());
         ZeroMemory(properties, sizeof(EVENT_TRACE_PROPERTIES));
         properties->Wnode.BufferSize = static_cast<ULONG>(buffer_size);
         properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
-        ControlTraceW(session_handle_, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
-        session_handle_ = 0;
+        CONTROLTRACE_ID session_id = session_id_value_;
+        ControlTraceW(session_id, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
+        session_id_value_ = 0;
     }
 
     if (trace_thread_.joinable()) {

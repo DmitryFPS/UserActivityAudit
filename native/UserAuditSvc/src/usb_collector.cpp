@@ -265,7 +265,7 @@ void UsbCollector::wmi_thread_main() {
                     wchar_t volume_name[MAX_PATH + 1] = {};
                     DWORD serial = 0;
                     if (GetVolumeInformationW(root.c_str(), volume_name, MAX_PATH, &serial, nullptr,
-                                            nullptr, nullptr, nullptr)) {
+                                            nullptr, nullptr, 0)) {
                         if (volume_name[0] != L'\0') {
                             event.data["volume_label"] = wide_to_utf8(volume_name);
                         }

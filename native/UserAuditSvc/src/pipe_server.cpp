@@ -2,10 +2,22 @@
 
 #include "useraudit/pipe_constants.hpp"
 
+#include <windows.h>
+#include <sddl.h>
+#include <winbase.h>
+
 #include <cstdint>
 #include <vector>
 
 namespace useraudit {
+
+namespace {
+
+#ifndef PIPE_ACCESS_INCOMING
+#define PIPE_ACCESS_INCOMING PIPE_ACCESS_INBOUND
+#endif
+
+}  // namespace
 
 PipeIngestServer::PipeIngestServer(EncryptedLogWriter& writer) : writer_(writer) {}
 

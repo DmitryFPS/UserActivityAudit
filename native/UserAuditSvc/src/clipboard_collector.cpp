@@ -2,6 +2,7 @@
 
 #include "useraudit/time_utils.hpp"
 
+#include <windows.h>
 #include <bcrypt.h>
 
 #include <chrono>

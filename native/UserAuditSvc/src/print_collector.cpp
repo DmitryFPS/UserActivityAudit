@@ -90,7 +90,7 @@ bool PrintCollector::handle_event(EVT_HANDLE event_record) {
 
     AuditEvent event;
     event.id = generate_event_id();
-    event.ts = iso8601_from_event_xml(xml);
+    event.ts = iso8601_from_event_xml(std::wstring(xml));
     if (event.ts.empty()) {
         event.ts = utc_now_iso8601();
     }

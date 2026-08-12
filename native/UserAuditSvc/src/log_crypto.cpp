@@ -3,6 +3,7 @@
 #include "useraudit/crypto_aes_gcm.hpp"
 #include "useraudit/crypto_base64.hpp"
 
+#include <windows.h>
 #include <bcrypt.h>
 
 #include <vector>

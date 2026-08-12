@@ -1,5 +1,6 @@
 #include "useraudit/crypto_aes_gcm.hpp"
 
+#include <windows.h>
 #include <bcrypt.h>
 
 namespace useraudit {

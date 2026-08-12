@@ -1,6 +1,7 @@
 #include "useraudit/key_manager.hpp"
 
 #include <windows.h>
+#include <wincrypt.h>
 
 #include <bcrypt.h>
 

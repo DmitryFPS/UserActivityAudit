@@ -1,6 +1,7 @@
 #include "useraudit/crypto_base64.hpp"
 
 #include <windows.h>
+#include <wincrypt.h>
 
 namespace useraudit {
 
