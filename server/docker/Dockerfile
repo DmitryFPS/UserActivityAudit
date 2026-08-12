@@ -2,6 +2,7 @@ ARG PROJECT=UserAudit.Ingest
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG PROJECT
 WORKDIR /src
+COPY Directory.Build.props ./
 COPY UserActivityAudit.Server.slnx ./
 COPY UserAudit.Shared/ UserAudit.Shared/
 COPY UserAudit.Ingest/ UserAudit.Ingest/

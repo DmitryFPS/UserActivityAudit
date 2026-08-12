@@ -1,6 +1,6 @@
-# Admin suite — Фаза 7
+# UserAudit — Анализ логов (автономный режим)
 
-.NET 10 WPF: **Dashboard**, **LogImporter**, **Reports**, **Forensic pack**, **Escrow decrypt**.
+WPF-приложение для просмотра **локальных** зашифрованных логов агента. Сервер не нужен.
 
 ## Сборка и запуск
 
@@ -9,37 +9,26 @@ dotnet build admin/UserActivityAudit.Admin.slnx -c Release
 dotnet run --project admin/UserAudit.Dashboard -c Release
 ```
 
+**Требования:** Windows 10/11, .NET 10, **запуск от администратора** на том же ПК, где установлен агент.
+
 ## Возможности
 
-| Модуль | Описание |
-|--------|----------|
-| **LogImporter** | Расшифровка `*.jsonl.enc` (AES-256-GCM, формат `v1:`) |
-| **Dashboard** | Хосты, timeline, alerts с сервера (Portal/Ingest/Alerts API) |
-| **Escrow decrypt** | Unwrap DEK по hostname через Escrow API + admin key |
-| **Daily Activity** | Login count, top apps, focus estimate → Excel/PDF |
-| **USB report** | События `usb.*` с correlation ID → Excel/PDF |
-| **Forensic pack** | ZIP: `events.jsonl` + `manifest.json` |
-
-## Подключение к серверу (dev)
-
-| Поле | Значение по умолчанию |
-|------|------------------------|
-| Portal | http://127.0.0.1:8080 |
-| Ingest | http://127.0.0.1:8081 |
-| Escrow | http://127.0.0.1:8082 |
-| Alerts | http://127.0.0.1:8083 |
-| Admin key | `dev-admin-key-change-me` |
-
-Локальные логи агента: `%ProgramData%\UserAudit\logs`
-
-DEK: файл 32 байт, base64-текст, или unwrap через Escrow.
+| Функция | Описание |
+|---------|----------|
+| Автоимпорт | `%ProgramData%\UserAudit\logs\*.jsonl.enc` |
+| Ключ DPAPI | `%ProgramData%\UserAudit\keys\master.key.dpapi` |
+| Хронология | Все события с фильтрацией |
+| Тревоги | tamper и critical из локального журнала |
+| USB | События с correlation ID |
+| Отчёты | Daily Activity и USB → Excel/PDF |
+| Forensic pack | ZIP: events.jsonl + manifest.json |
 
 ## Структура
 
 ```
 admin/
-  UserAudit.Admin.Core/   — crypto, import, reports, API clients
-  UserAudit.Dashboard/    — WPF UI
+  UserAudit.Admin.Core/   — расшифровка, импорт, отчёты
+  UserAudit.Dashboard/    — WPF UI (русский)
 ```
 
-Отчёты Excel/PDF — паттерн UsbForensicAudit (ClosedXML + QuestPDF).
+Полная инструкция: [docs/STANDALONE.md](../docs/STANDALONE.md).

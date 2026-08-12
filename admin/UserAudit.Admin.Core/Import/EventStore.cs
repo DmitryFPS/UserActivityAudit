@@ -2,66 +2,47 @@ using UserAudit.Admin.Core.Models;
 
 namespace UserAudit.Admin.Core.Import;
 
+/// <summary>
+/// In-memory store for standalone (local-only) log analysis.
+/// </summary>
 public sealed class EventStore
 {
-    private readonly List<AuditEventModel> _localEvents = [];
+    private readonly List<AuditEventModel> _events = [];
     private readonly object _gate = new();
 
-    public IReadOnlyList<HostSummary> ServerHosts { get; private set; } = [];
-    public IReadOnlyList<TimelineEvent> ServerTimeline { get; private set; } = [];
-    public IReadOnlyList<AlertSummary> ServerAlerts { get; private set; } = [];
+    public DateTimeOffset? LastImportUtc { get; private set; }
+    public string? LastKeySource { get; private set; }
 
     public event Action? Changed;
 
-    public IReadOnlyList<AuditEventModel> GetAllEvents()
+    public IReadOnlyList<AuditEventModel> GetEvents()
     {
         lock (_gate)
         {
-            return _localEvents
-                .Concat(ServerTimeline.Select(x => new AuditEventModel
-                {
-                    EventId = x.EventId,
-                    TimestampUtc = x.TimestampUtc,
-                    Category = x.Category,
-                    Action = x.Action,
-                    Severity = x.Severity,
-                    Host = x.Hostname,
-                    Level = 1,
-                }))
-                .OrderByDescending(x => x.TimestampUtc)
-                .ToList();
+            return _events.OrderByDescending(x => x.TimestampUtc).ToList();
         }
     }
 
-    public void ReplaceLocalEvents(IEnumerable<AuditEventModel> events)
+    public void ReplaceLocalEvents(IReadOnlyList<AuditEventModel> events, string? keySource = null)
     {
         lock (_gate)
         {
-            _localEvents.Clear();
-            _localEvents.AddRange(events);
+            _events.Clear();
+            _events.AddRange(events);
         }
 
+        LastImportUtc = DateTimeOffset.UtcNow;
+        LastKeySource = keySource;
         Changed?.Invoke();
     }
 
-    public void SetServerData(
-        IReadOnlyList<HostSummary> hosts,
-        IReadOnlyList<TimelineEvent> timeline,
-        IReadOnlyList<AlertSummary> alerts)
-    {
-        ServerHosts = hosts;
-        ServerTimeline = timeline;
-        ServerAlerts = alerts;
-        Changed?.Invoke();
-    }
-
-    public int LocalEventCount
+    public int EventCount
     {
         get
         {
             lock (_gate)
             {
-                return _localEvents.Count;
+                return _events.Count;
             }
         }
     }

@@ -3,9 +3,9 @@
   "profile": "auto",
   "host_id": "",
   "server": {
-    "ingest_url": "https://audit.example.com:8443",
+    "ingest_url": "",
     "mtls_cert_thumbprint": "",
-    "upload_interval_minutes": 120
+    "upload_interval_minutes": 0
   },
   "collectors": {
     "session": true,
@@ -15,8 +15,7 @@
     "file": true,
     "network": true,
     "clipboard": false,
-    "print": true,
-    "l3_schedule_cron": "0 2 * * 0"
+    "print": true
   },
   "paths": {
     "critical": [
@@ -25,13 +24,6 @@
       "%USERPROFILE%\\Downloads"
     ],
     "sensitive": []
-  },
-  "alerts": {
-    "usb_copy_threshold_mb": 10,
-    "denylist_processes": [
-      "tor.exe",
-      "mimikatz.exe"
-    ]
   },
   "storage": {
     "max_log_mb_per_day": 10,

@@ -435,9 +435,9 @@ bool ConfigManager::write_default_config(const std::filesystem::path& path) cons
   "version": 1,
   "profile": "auto",
   "server": {
-    "ingest_url": "http://127.0.0.1:8081",
+    "ingest_url": "",
     "mtls_cert_thumbprint": "",
-    "upload_interval_minutes": 120
+    "upload_interval_minutes": 0
   },
   "collectors": {
     "session": true,

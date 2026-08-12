@@ -1,39 +1,43 @@
 # UserActivityAudit
 
-Коммерческая система аудита действий пользователя для Windows 10/11.
+Аудит действий пользователя на Windows 10/11 — **автономный продукт без центрального сервера**.
 
-- **Клиент**: служба Windows на C++20 (сборщики L1/L2/L3, шифрованные логи, защита от подмены)
-- **Сервер**: .NET 10 — приём логов, escrow ключей, оповещения, веб-портал
-- **Админка**: .NET 10 — WPF-дашборд, отчёты Excel/PDF, forensic-инструменты
+| Компонент | Описание |
+|-----------|----------|
+| **Агент** (`UserAudit.exe`) | Служба на каждом ПК: сбор L1/L2, шифрование AES-256-GCM, tamper, minifilter |
+| **Анализатор** (`UserAudit.Dashboard`) | WPF: хронология, тревоги, USB, отчёты Excel/PDF, forensic ZIP |
 
-Пилотное развёртывание: 15 ноутбуков (в том числе с 2 ГБ ОЗУ).
+Docker и сервер **не требуются**. Подробно: [docs/STANDALONE.md](docs/STANDALONE.md).
+
+## Быстрый старт
+
+### Агент (администратор)
+
+```powershell
+cmake -S native -B build/native -G "Visual Studio 17 2022" -A x64
+cmake --build build/native --config Release
+.\build\native\UserAuditSvc\Release\UserAudit.exe --install
+sc start UserAuditSvc
+```
+
+### Анализатор (администратор, тот же ПК)
+
+```powershell
+dotnet run --project admin/UserAudit.Dashboard -c Release
+```
 
 ## Документация
 
 | Документ | Описание |
 |----------|----------|
-| [ANALYTICS.md](ANALYTICS.md) | Полная спецификация продукта |
-| [ROADMAP.md](ROADMAP.md) | Фазы разработки 0–10 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Архитектура системы |
-| [docs/BUILD.md](docs/BUILD.md) | Сборка |
-| [docs/SETUP.md](docs/SETUP.md) | Установка, служба, расшифровка логов |
-| [docs/TESTING.md](docs/TESTING.md) | Тестирование, reboot, RAM, чеклисты |
+| [docs/STANDALONE.md](docs/STANDALONE.md) | **Основной режим** — без сервера |
+| [docs/SETUP.md](docs/SETUP.md) | Установка, `--decrypt`, служба |
+| [docs/BUILD.md](docs/BUILD.md) | Сборка native |
+| [ANALYTICS.md](ANALYTICS.md) | Полная спецификация (включая опциональный server) |
+| [ROADMAP.md](ROADMAP.md) | Фазы разработки |
 
-## Сборка (фаза 0+)
-
-### Агент (Windows)
-
-```powershell
-cmake -S native -B build/native -G "Visual Studio 17 2022" -A x64
-cmake --build build/native --config Release
-```
-
-Результат: `UserAudit.exe` — один файл (служба + внутренний user-agent).
-
-### Сервер и админка (.NET 10)
-
-Появятся в фазах 6–7.
+Опциональный серверный стек (Ingest/Portal): [server/README.md](server/README.md).
 
 ## Лицензия
 
-Частное / внутреннее использование. Все права защищены.
+Частное / внутреннее использование.
