@@ -11,13 +11,13 @@ public class HostsModel(UserAuditDbContext db) : Microsoft.AspNetCore.Mvc.RazorP
     public async Task OnGetAsync(CancellationToken cancellationToken)
     {
         Hosts = await db.Hosts
+            .OrderBy(h => h.Hostname)
             .Select(h => new HostSummaryDto(
                 h.Hostname,
                 h.FirstSeenUtc,
                 h.LastSeenUtc,
                 h.LogBlobs.Count,
                 h.Alerts.Count(a => a.AcknowledgedAtUtc == null)))
-            .OrderBy(h => h.Hostname)
             .ToListAsync(cancellationToken);
     }
 }

@@ -127,13 +127,13 @@ app.MapPost("/api/v1/ingest/events", async (
 app.MapGet("/api/v1/ingest/hosts", async (UserAuditDbContext db, CancellationToken cancellationToken) =>
 {
     var hosts = await db.Hosts
+        .OrderBy(h => h.Hostname)
         .Select(h => new HostSummaryDto(
             h.Hostname,
             h.FirstSeenUtc,
             h.LastSeenUtc,
             h.LogBlobs.Count,
             h.Alerts.Count(a => a.AcknowledgedAtUtc == null)))
-        .OrderBy(h => h.Hostname)
         .ToListAsync(cancellationToken);
     return Results.Ok(hosts);
 });
