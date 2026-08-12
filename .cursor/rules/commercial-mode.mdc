@@ -1,0 +1,40 @@
+---
+description: UserActivityAudit commercial production mode — full scope, no simplification
+alwaysApply: true
+---
+
+# UserActivityAudit — Commercial Production Mode
+
+## Product scope
+- Commercial-grade user activity audit for Windows 10/11 (pilot fleet: 15 laptops).
+- **Not** a prototype. No "we'll fix later" stubs in merged code.
+- Full stack: C++ agent (L1+L2+L3), minifilter driver, server (ingest/escrow/alerts/portal), C# admin suite.
+
+## Architecture rules
+- **Client (native/)**: C++20 only. Windows Service. Target ≤15 MB RAM on 2 GB PCs (Low profile).
+- **Server (server/)**: C# .NET 10 — ingest, escrow, alerts, web portal.
+- **Admin (admin/)**: C# .NET 10 — WPF dashboard, reports, forensic, LogImporter.
+- **No .NET on client laptops.**
+
+## Development workflow
+- Work **one ROADMAP phase at a time**. Do not skip ahead.
+- Each module: production error handling, config-driven, unit tests where applicable.
+- Code comments: English. User-facing docs: Russian.
+- Update ROADMAP.md when a phase/sprint is completed.
+- Minimize diff scope; match existing conventions.
+
+## Security (non-negotiable)
+- Logs: AES-256-GCM at rest, DEK split (TPM + USB), server escrow, HMAC hash chain.
+- Tamper: minifilter + IT USB Ed25519 for uninstall/stop (Phase 5+).
+- No hardcoded secrets. No plaintext logs on disk after Phase 2.
+- Keylog/screenshots: opt-in modules only; off by default.
+
+## Out of scope unless explicitly requested
+- Prototype shortcuts (plaintext logs, hardcoded config, skip tests).
+- Simplifying to "network share only" instead of server stack.
+- Committing unless user asks.
+
+## Reference docs
+- ANALYTICS.md — full product specification
+- ROADMAP.md — phases 0–10 with acceptance criteria
+- docs/ARCHITECTURE.md — system design

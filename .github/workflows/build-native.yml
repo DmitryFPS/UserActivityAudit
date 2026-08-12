@@ -1,0 +1,22 @@
+name: build-native
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -S native -B build/native -G "Visual Studio 17 2022" -A x64
+
+      - name: Build Release
+        run: cmake --build build/native --config Release
+
+      - name: Build Debug
+        run: cmake --build build/native --config Debug

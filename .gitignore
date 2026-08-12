@@ -1,0 +1,64 @@
+# Build
+build/
+out/
+cmake-build-*/
+x64/
+x86/
+Debug/
+Release/
+*.user
+*.suo
+*.sln.docstates
+.vs/
+
+# Native
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.sys
+*.cat
+
+# .NET
+bin/
+obj/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# IDE
+.idea/
+*.swp
+*~
+
+# Logs & secrets (never commit)
+*.key
+*.pem
+org-vault.*
+secrets/
+.env
+.env.*
+
+# Installer output
+dist/
+*.msi
+*.wixpdb
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Test output
+TestResults/
+coverage/
+*.trx
+
+# Docker volumes
+docker/data/

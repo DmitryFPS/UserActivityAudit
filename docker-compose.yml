@@ -1,0 +1,55 @@
+# UserActivityAudit — Commercial Server Stack (Phase 6)
+# Placeholder for development. Services implemented in Phase 6.
+
+services:
+  ingest:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
+    container_name: useraudit-ingest
+    profiles: ["full"]
+    ports:
+      - "8443:8443"
+    environment:
+      - ASPNETCORE_URLS=https://+:8443
+      - UserAudit__Storage__Path=/data/logs
+    volumes:
+      - ./docker/data/ingest:/data/logs
+    restart: unless-stopped
+
+  escrow:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
+    container_name: useraudit-escrow
+    profiles: ["full"]
+    ports:
+      - "8444:8444"
+    environment:
+      - ASPNETCORE_URLS=https://+:8444
+      - UserAudit__Vault__Path=/data/vault
+    volumes:
+      - ./docker/data/vault:/data/vault
+    restart: unless-stopped
+
+  portal:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
+    container_name: useraudit-portal
+    profiles: ["full"]
+    ports:
+      - "8445:8445"
+    environment:
+      - ASPNETCORE_URLS=https://+:8445
+    depends_on:
+      - ingest
+      - escrow
+    restart: unless-stopped
+
+  alerts:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
+    container_name: useraudit-alerts
+    profiles: ["full"]
+    ports:
+      - "8446:8446"
+    depends_on:
+      - ingest
+    restart: unless-stopped
+
+# Usage (after Phase 6):
+#   docker compose --profile full up -d
