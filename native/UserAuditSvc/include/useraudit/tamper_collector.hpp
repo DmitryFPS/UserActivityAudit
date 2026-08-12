@@ -10,6 +10,7 @@
 
 namespace useraudit {
 
+class EventForwarder;
 class LockdownManager;
 
 // Security/System event subscriptions for tamper attempts (service stop, protected paths).
@@ -23,6 +24,7 @@ public:
 
     void set_stop_flag(volatile bool* flag) { stop_flag_ = flag; }
     void set_lockdown_manager(LockdownManager* manager) { lockdown_manager_ = manager; }
+    void set_event_forwarder(EventForwarder* forwarder) { event_forwarder_ = forwarder; }
 
     bool start();
     void stop();
@@ -43,6 +45,7 @@ private:
     EVT_HANDLE security_subscription_ = nullptr;
     volatile bool* stop_flag_ = nullptr;
     LockdownManager* lockdown_manager_ = nullptr;
+    EventForwarder* event_forwarder_ = nullptr;
 };
 
 }  // namespace useraudit

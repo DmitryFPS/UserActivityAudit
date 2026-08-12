@@ -1,0 +1,6 @@
+@UserAudit.Escrow_HostAddress = http://localhost:5179
+
+GET {{UserAudit.Escrow_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

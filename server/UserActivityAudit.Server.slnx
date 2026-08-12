@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="UserAudit.Alerts/UserAudit.Alerts.csproj" />
+  <Project Path="UserAudit.Escrow/UserAudit.Escrow.csproj" />
+  <Project Path="UserAudit.Ingest/UserAudit.Ingest.csproj" />
+  <Project Path="UserAudit.Portal/UserAudit.Portal.csproj" />
+  <Project Path="UserAudit.Shared/UserAudit.Shared.csproj" />
+</Solution>

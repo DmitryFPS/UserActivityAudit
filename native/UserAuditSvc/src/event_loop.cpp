@@ -16,6 +16,7 @@
 #include "useraudit/process_collector.hpp"
 #include "useraudit/session_agent_manager.hpp"
 #include "useraudit/session_collector.hpp"
+#include "useraudit/event_forwarder.hpp"
 #include "useraudit/tamper_collector.hpp"
 #include "useraudit/upload_client.hpp"
 #include "useraudit/usb_collector.hpp"
@@ -144,14 +145,18 @@ void run_event_loop(volatile bool& stop_requested) {
         OutputDebugStringW(L"[UserAuditSvc] AclGuard failed to start\n");
     }
 
+    const UploadSettings upload_settings = parse_upload_settings(config.raw_config());
+    EventForwarder event_forwarder(upload_settings);
+
     TamperCollector tamper_collector(writer, hostname);
     tamper_collector.set_stop_flag(&stop_requested);
     tamper_collector.set_lockdown_manager(&lockdown_manager);
+    tamper_collector.set_event_forwarder(&event_forwarder);
     if (!tamper_collector.start()) {
         OutputDebugStringW(L"[UserAuditSvc] TamperCollector failed to start\n");
     }
 
-    UploadClient upload_client(writer.log_directory(), parse_upload_settings(config.raw_config()));
+    UploadClient upload_client(writer.log_directory(), upload_settings);
     upload_client.set_stop_flag(&stop_requested);
     if (!upload_client.start()) {
         OutputDebugStringW(L"[UserAuditSvc] UploadClient failed to start\n");

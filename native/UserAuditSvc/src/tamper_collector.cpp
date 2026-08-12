@@ -1,5 +1,6 @@
 #include "useraudit/tamper_collector.hpp"
 
+#include "useraudit/event_forwarder.hpp"
 #include "useraudit/lockdown_manager.hpp"
 #include "useraudit/paths.hpp"
 #include "useraudit/time_utils.hpp"
@@ -89,6 +90,10 @@ void TamperCollector::emit_tamper(const std::string& act, const std::string& det
     event.src = "eventlog";
     event.data["detail"] = detail;
     writer_.write(event);
+
+    if (event_forwarder_ != nullptr) {
+        event_forwarder_->forward(event);
+    }
 
     if (lockdown_manager_ != nullptr) {
         lockdown_manager_->activate(detail);

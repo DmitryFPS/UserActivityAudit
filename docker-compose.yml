@@ -1,55 +1,113 @@
 # UserActivityAudit — Commercial Server Stack (Phase 6)
-# Placeholder for development. Services implemented in Phase 6.
+# Dev: HTTP on localhost. Production mTLS — Phase 6+ hardening.
 
 services:
-  ingest:
-    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
-    container_name: useraudit-ingest
-    profiles: ["full"]
-    ports:
-      - "8443:8443"
+  postgres:
+    image: postgres:16-alpine
+    container_name: useraudit-postgres
     environment:
-      - ASPNETCORE_URLS=https://+:8443
-      - UserAudit__Storage__Path=/data/logs
+      POSTGRES_DB: useraudit
+      POSTGRES_USER: useraudit
+      POSTGRES_PASSWORD: useraudit
+    ports:
+      - "5432:5432"
     volumes:
-      - ./docker/data/ingest:/data/logs
+      - useraudit_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U useraudit -d useraudit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  ingest:
+    build:
+      context: ./server
+      dockerfile: docker/Dockerfile
+      args:
+        PROJECT: UserAudit.Ingest
+    container_name: useraudit-ingest
+    command: ["dotnet", "UserAudit.Ingest.dll"]
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=useraudit;Username=useraudit;Password=useraudit
+      UserAudit__Storage__Path: /data/logs
+    volumes:
+      - ./docker/data/logs:/data/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   escrow:
-    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
+    build:
+      context: ./server
+      dockerfile: docker/Dockerfile
+      args:
+        PROJECT: UserAudit.Escrow
     container_name: useraudit-escrow
-    profiles: ["full"]
+    command: ["dotnet", "UserAudit.Escrow.dll"]
     ports:
-      - "8444:8444"
+      - "8082:8080"
     environment:
-      - ASPNETCORE_URLS=https://+:8444
-      - UserAudit__Vault__Path=/data/vault
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=useraudit;Username=useraudit;Password=useraudit
+      UserAudit__Vault__Path: /data/vault
+      UserAudit__Admin__ApiKey: dev-admin-key-change-me
     volumes:
       - ./docker/data/vault:/data/vault
-    restart: unless-stopped
-
-  portal:
-    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
-    container_name: useraudit-portal
-    profiles: ["full"]
-    ports:
-      - "8445:8445"
-    environment:
-      - ASPNETCORE_URLS=https://+:8445
     depends_on:
-      - ingest
-      - escrow
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   alerts:
-    image: mcr.microsoft.com/dotnet/aspnet:10.0-preview
+    build:
+      context: ./server
+      dockerfile: docker/Dockerfile
+      args:
+        PROJECT: UserAudit.Alerts
     container_name: useraudit-alerts
-    profiles: ["full"]
+    command: ["dotnet", "UserAudit.Alerts.dll"]
     ports:
-      - "8446:8446"
+      - "8083:8080"
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=useraudit;Username=useraudit;Password=useraudit
+      UserAudit__Admin__ApiKey: dev-admin-key-change-me
     depends_on:
-      - ingest
+      postgres:
+        condition: service_healthy
+      ingest:
+        condition: service_started
     restart: unless-stopped
 
-# Usage (after Phase 6):
-#   docker compose --profile full up -d
+  portal:
+    build:
+      context: ./server
+      dockerfile: docker/Dockerfile
+      args:
+        PROJECT: UserAudit.Portal
+    container_name: useraudit-portal
+    command: ["dotnet", "UserAudit.Portal.dll"]
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=useraudit;Username=useraudit;Password=useraudit
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  useraudit_pg:
+
+# Usage:
+#   docker compose up -d --build
+#   Portal:  http://localhost:8080
+#   Ingest:  http://localhost:8081/api/v1/ingest/logs
+#   Escrow:  http://localhost:8082/api/v1/escrow/public-key
+#   Alerts:  http://localhost:8083/api/v1/alerts

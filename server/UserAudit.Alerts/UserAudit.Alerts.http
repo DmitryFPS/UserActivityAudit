@@ -1,0 +1,6 @@
+@UserAudit.Alerts_HostAddress = http://localhost:5291
+
+GET {{UserAudit.Alerts_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

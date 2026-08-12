@@ -1,0 +1,30 @@
+@page
+@model UserAudit.Portal.Pages.HostsModel
+@{
+    ViewData["Title"] = "Hosts";
+}
+
+<h1>Hosts</h1>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Hostname</th>
+        <th>First seen</th>
+        <th>Last seen</th>
+        <th>Log blobs</th>
+        <th>Open alerts</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var host in Model.Hosts)
+    {
+        <tr>
+            <td>@host.Hostname</td>
+            <td>@host.FirstSeenUtc.ToString("u")</td>
+            <td>@host.LastSeenUtc.ToString("u")</td>
+            <td>@host.LogBlobCount</td>
+            <td>@host.OpenAlertCount</td>
+        </tr>
+    }
+    </tbody>
+</table>

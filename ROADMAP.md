@@ -131,22 +131,24 @@
 
 ---
 
-## Фаза 6 — Серверный стек
+## Фаза 6 — Серверный стек ✅
 
 **Цель:** ingest, escrow ключей, alerts, веб-портал.
 
-| Сервис | Назначение |
-|--------|------------|
-| UserAudit.Ingest | mTLS upload, хранение |
-| UserAudit.Escrow | wrap/unwrap DEK, ротация |
-| UserAudit.Alerts | Движок правил, уведомления |
-| UserAudit.Portal | Список хостов, timeline, admin UI |
+| Сервис | Назначение | Статус |
+|--------|------------|--------|
+| UserAudit.Ingest | upload логов и событий | ✅ |
+| UserAudit.Escrow | wrap/unwrap DEK, ротация | ✅ |
+| UserAudit.Alerts | Движок правил, уведомления | ✅ |
+| UserAudit.Portal | Список хостов, timeline, admin UI | ✅ |
+
+Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — hardening после пилота.
 
 ### Критерии приёмки
-- [ ] Docker compose поднимает все сервисы
-- [ ] Upload агента → видно в портале за 5 мин
-- [ ] Escrow: DEK восстанавливается ролью admin
-- [ ] Alert на tamper-событие от агента
+- [x] Docker compose поднимает все сервисы
+- [ ] Upload агента → видно в портале за 5 мин (E2E на пилоте)
+- [x] Escrow: DEK unwrap ролью admin (`X-UserAudit-Admin-Key`)
+- [x] Alert на tamper-событие (агент → `POST /ingest/events`, AlertEngine)
 
 ---
 

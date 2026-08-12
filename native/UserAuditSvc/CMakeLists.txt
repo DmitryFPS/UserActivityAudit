@@ -31,6 +31,7 @@ add_executable(UserAudit
     src/acl_guard.cpp
     src/tamper_collector.cpp
     src/upload_client.cpp
+    src/event_forwarder.cpp
     src/auth_guard.cpp
     src/auth_pipe_server.cpp
     src/driver_client.cpp

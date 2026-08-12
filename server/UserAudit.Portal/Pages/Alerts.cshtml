@@ -1,0 +1,30 @@
+@page
+@model UserAudit.Portal.Pages.AlertsModel
+@{
+    ViewData["Title"] = "Alerts";
+}
+
+<h1>Alerts</h1>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Created</th>
+        <th>Host</th>
+        <th>Rule</th>
+        <th>Title</th>
+        <th>Severity</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var alert in Model.Alerts)
+    {
+        <tr class="@(alert.AcknowledgedAtUtc is null ? "table-warning" : "")">
+            <td>@alert.CreatedAtUtc.ToString("u")</td>
+            <td>@alert.Hostname</td>
+            <td>@alert.RuleId</td>
+            <td>@alert.Title</td>
+            <td>@alert.Severity</td>
+        </tr>
+    }
+    </tbody>
+</table>
