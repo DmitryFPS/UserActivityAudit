@@ -1,11 +1,14 @@
 # Build Guide — Native Agent
 
+See also: [SETUP.md](SETUP.md) (IntelliJ IDEA, Security log, service install).
+
 ## Prerequisites
 
 - Windows 10/11 x64
-- **Visual Studio 2022** with workloads:
+- **Visual Studio Build Tools 2022** (or full VS 2022) with:
   - Desktop development with C++
-  - C++ CMake tools for Windows (includes CMake 3.x)
+  - C++ CMake tools for Windows
+- IntelliJ IDEA — optional editor; **does not replace** MSVC (see SETUP.md)
 - (Phase 5+) Windows Driver Kit (WDK)
 
 ## Configure & build

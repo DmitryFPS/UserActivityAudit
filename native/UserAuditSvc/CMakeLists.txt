@@ -6,6 +6,8 @@ add_executable(UserAuditSvc
     src/jsonl_writer.cpp
     src/paths.cpp
     src/session_collector.cpp
+    src/process_collector.cpp
+    src/foreground_collector.cpp
     src/time_utils.cpp
 )
 
@@ -28,8 +30,10 @@ target_link_libraries(UserAuditSvc PRIVATE
     Advapi32
     Ole32
     Shell32
+    Psapi
     wevtapi
     rpcrt4
+    tdh
 )
 
 if(MSVC)

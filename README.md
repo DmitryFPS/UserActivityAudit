@@ -15,6 +15,8 @@ Pilot deployment: 15 laptops (including 2 GB RAM machines).
 | [ANALYTICS.md](ANALYTICS.md) | Full product specification |
 | [ROADMAP.md](ROADMAP.md) | Development phases 0–10 |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
+| [docs/BUILD.md](docs/BUILD.md) | Build instructions |
+| [docs/SETUP.md](docs/SETUP.md) | IDEA, service, Security log |
 
 ## Build (Phase 0+)
 

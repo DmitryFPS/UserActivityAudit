@@ -5,8 +5,6 @@
 #include <ShlObj.h>
 
 #include <array>
-#include <cstdlib>
-#include <vector>
 
 namespace useraudit {
 
@@ -30,12 +28,6 @@ std::string wide_to_utf8(std::wstring_view wide) {
 }  // namespace
 
 std::filesystem::path resolve_log_directory() {
-    if (const char* override_path = std::getenv("USERAUDIT_LOG_DIR")) {
-        if (*override_path != '\0') {
-            return std::filesystem::path(override_path);
-        }
-    }
-
     PWSTR program_data = nullptr;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, nullptr, &program_data)) &&
         program_data != nullptr) {
