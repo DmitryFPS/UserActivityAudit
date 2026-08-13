@@ -1,4 +1,3 @@
-#define _KERNEL_MODE 1
 #include <fltKernel.h>
 
 #include "useraudit/driver_ioctl.hpp"
@@ -163,7 +162,7 @@ static CONST FLT_REGISTRATION UserAuditRegistration = {
     nullptr,
     nullptr};
 
-NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath) {
+extern "C" NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath) {
     UNREFERENCED_PARAMETER(RegistryPath);
 
     NTSTATUS status = FltRegisterFilter(DriverObject, &UserAuditRegistration, &g_filter_handle);

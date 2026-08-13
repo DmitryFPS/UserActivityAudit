@@ -1,32 +1,63 @@
+;
+; UserAuditFilter — minifilter for %ProgramData%\UserAudit\
+;
+
 [Version]
-Signature="$WINDOWS NT$"
-Class=ActivityMonitor
-ClassGuid={b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
-Provider=%ManufacturerName%
-DriverVer=08/12/2026,1.0.0.0
-CatalogFile=UserAuditFilter.cat
-PnpLockdown=1
+Signature   = "$Windows NT$"
+Class       = "ActivityMonitor"
+ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
+Provider    = %ManufacturerName%
+DriverVer   = 08/13/2026,1.0.0.0
+; Test-sign lab: no catalog (Inf2cat off). Production: restore CatalogFile + PnpLockdown + EV.
+
+[SourceDisksNames]
+1 = %DiskName%,,,
+
+[SourceDisksFiles]
+UserAuditFilter.sys = 1
 
 [DestinationDirs]
 DefaultDestDir = 12
+UserAuditFilter.DriverFiles = 12
 
-[DefaultInstall.NT]
-CopyFiles = DriverCopy
+[DefaultInstall.NTamd64]
+OptionDesc = %ServiceDescription%
+CopyFiles = UserAuditFilter.DriverFiles
 
-[DefaultInstall.NT.Services]
-AddService = UserAuditFilter,%SPSVCINST_ASSOCSERVICE%,UserAuditFilterService
+[DefaultInstall.NTamd64.Services]
+AddService = UserAuditFilter,,UserAuditFilter.Service
 
-[DriverCopy]
+[UserAuditFilter.DriverFiles]
 UserAuditFilter.sys
 
-[UserAuditFilterService]
-DisplayName    = %ServiceName%
-ServiceType    = 2
-StartType      = 3
-ErrorControl   = 1
-ServiceBinary  = %12%\UserAuditFilter.sys
+[UserAuditFilter.Service]
+DisplayName      = %ServiceName%
+Description      = %ServiceDescription%
+ServiceBinary    = %12%\UserAuditFilter.sys
+Dependencies     = FltMgr
+ServiceType      = 2
+StartType        = 3
+ErrorControl     = 1
+LoadOrderGroup   = "FSFilter Activity Monitor"
+AddReg           = UserAuditFilter.AddRegistry
+
+[UserAuditFilter.AddRegistry]
+HKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%
+HKR,"Instances\"%InstanceName%,"Altitude",0x00000000,%Altitude%
+HKR,"Instances\"%InstanceName%,"Flags",0x00010001,0x0
+
+[DefaultUninstall.NTamd64]
+LegacyUninstall = 1
+DelFiles = UserAuditFilter.DriverFiles
+
+[DefaultUninstall.NTamd64.Services]
+DelService = UserAuditFilter,0x200
 
 [Strings]
-ManufacturerName = "UserActivityAudit"
-ServiceName = "UserAudit Minifilter"
-SPSVCINST_ASSOCSERVICE = 0x00000002
+ManufacturerName   = "UserActivityAudit"
+ServiceName        = "UserAuditFilter"
+ServiceDescription = "Protects UserAudit logs from delete/rename"
+DiskName           = "UserAuditFilter Installation Disk"
+DefaultInstance    = "UserAuditFilter Instance"
+InstanceName       = "UserAuditFilter Instance"
+Altitude           = "370030"

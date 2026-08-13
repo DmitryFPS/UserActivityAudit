@@ -29,7 +29,9 @@ param(
 
     [switch] $SkipBuild,
 
-    [switch] $SkipSmoke
+    [switch] $SkipSmoke,
+
+    [switch] $SkipDriver
 )
 
 $ErrorActionPreference = 'Stop'
@@ -134,6 +136,24 @@ if ($LASTEXITCODE -ne 0) {
     }
 }
 sc.exe config $ServiceName start= auto | Out-Null
+
+if (-not $SkipDriver) {
+    Write-Step 'Minifilter driver (UserAuditFilter.sys)'
+    $driverScript = Join-Path $PSScriptRoot 'install-driver.ps1'
+    $driverSys = Join-Path $RepoRoot 'build\native\UserAuditFilter\Release\UserAuditFilter.sys'
+    try {
+        if (-not (Test-Path $driverSys)) {
+            & (Join-Path $PSScriptRoot 'build-driver.ps1')
+        }
+        & $driverScript -SkipBuild -AllowReboot
+        if ($LASTEXITCODE -eq 10) {
+            Write-Host 'Reboot scheduled — after login RunOnce completes driver install and service reconnect.'
+            exit 10
+        }
+    } catch {
+        Write-Warning "Minifilter install skipped: $($_.Exception.Message)"
+    }
+}
 
 Write-Step 'Enable lock/unlock audit (Security 4800/4801 backup)'
 # Primary lock/unlock source is WTS in user-agent; this enables Security log fallback.

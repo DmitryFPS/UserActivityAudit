@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <WDKContentRoot Condition="'$(WDKContentRoot)' == ''">C:\Program Files (x86)\Windows Kits\10\</WDKContentRoot>
+    <WdkContentRoot Condition="'$(WdkContentRoot)' == ''">$(WDKContentRoot)</WdkContentRoot>
+    <WDKBuildFolder Condition="'$(WDKBuildFolder)' == ''">10.0.26100.0</WDKBuildFolder>
+    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">10.0.26100.0</WindowsTargetPlatformVersion>
+    <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == ''">$(WindowsTargetPlatformVersion)</TargetPlatformVersion>
+    <WindowsSdkDir Condition="'$(WindowsSdkDir)' == ''">$(WDKContentRoot)</WindowsSdkDir>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(WDKContentRoot)</UniversalCRTSdkDir>
+  </PropertyGroup>
+  <!-- Must load before WindowsDriver.OS.props (via Shared.props) sets _NT_TARGET_VERSION. -->
+  <Import Project="$(WDKContentRoot)build\$(WDKBuildFolder)\WindowsDriver.Default.props"
+          Condition="Exists('$(WDKContentRoot)build\$(WDKBuildFolder)\WindowsDriver.Default.props')" />
+  <Import Project="$(WDKContentRoot)DesignTime\CommonConfiguration\Neutral\WDK\$(WDKBuildFolder)\WDK.props"
+          Condition="Exists('$(WDKContentRoot)DesignTime\CommonConfiguration\Neutral\WDK\$(WDKBuildFolder)\WDK.props')" />
+  <PropertyGroup>
+    <SkipPackageVerification>true</SkipPackageVerification>
+    <DDKPlatform Condition="'$(DDKPlatform)' == ''">x64</DDKPlatform>
+    <DDK_LibraryPath_DDKPlatform>$(WDKContentRoot)lib\$(TargetPlatformVersion)\km\$(DDKPlatform)</DDK_LibraryPath_DDKPlatform>
+    <DDK_LIB_PATH>$(DDK_LibraryPath_DDKPlatform)\</DDK_LIB_PATH>
+  </PropertyGroup>
+</Project>

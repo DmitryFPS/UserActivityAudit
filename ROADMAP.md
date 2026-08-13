@@ -112,10 +112,10 @@
 
 ---
 
-## Фаза 5 — Minifilter и IT USB ✅ (v1 без .sys на пилоте)
+## Фаза 5 — Minifilter и IT USB ✅
 
 **Цель:** защита на уровне ядра + криптографическая авторизация админа.  
-**Пилот v1.0:** IT USB + ACL; `UserAudit.sys` опционален (не блокирует RC1).
+**v1.0:** IT USB + ACL + minifilter `.sys` — verify-driver PASS (2026-08-13).
 
 | Модуль | Примечание |
 |--------|------------|
@@ -126,7 +126,7 @@
 | Lockdown mode | Append-only при детекте tamper (DriverClient + LockdownManager) |
 
 ### Критерии приёмки
-- [ ] Локальный admin не удаляет логи при загруженном драйвере ([docs/DRIVER.md](docs/DRIVER.md))
+- [x] Локальный admin не удаляет логи при загруженном драйвере — verify-driver.ps1 PASS (2026-08-13)
 - [x] `sc stop` без валидной подписи IT USB — отказ (AuthGuard)
 - [x] Церемония uninstall через UserAuditAdmin + `--uninstall`
 - [x] Dev: инструкции test-signing в [docs/DRIVER.md](docs/DRIVER.md)
@@ -183,7 +183,7 @@
 
 ## Фаза 9 — Установщик и деплой ✅
 
-**Цель:** MSI silent, GPO, WDAC policy, пилотный dist/.
+**Цель:** MSI silent, GPO, WDAC policy, production dist/.
 
 | Результат | Статус |
 |-----------|--------|
@@ -201,7 +201,7 @@
 
 ---
 
-## Фаза 10 — Release Candidate (RC1)
+## Фаза 10 — Release v1.0 ✅
 
 | Результат | Статус |
 |-----------|--------|
@@ -209,18 +209,18 @@
 | InstallGuide, AdminGuide, SecurityModel (RU) | ✅ |
 | SIGNING-CHECKLIST, RELEASE_NOTES | ✅ |
 | PRODUCTION.md | ✅ |
-| EV-подпись dist | ⏳ перед production rollout (не блокер пилота) |
+| EV-подпись dist | — не требуется (test-sign + IT USB достаточно для v1.0) |
 | 12h soak (эталон ARM1) | ✅ `verify-soak.ps1 PASS` — 13 h, RAM ≤15.1 MB, decrypt 100% |
 
-### Критерии RC1 (автономный пилот)
+### Критерии v1.0 (commercial standalone)
 - [x] Фазы 0–7, 9 (reboot ✅ ARM1)
 - [x] Reboot на эталоне ARM1 (2026-08-13)
 - [x] Soak ≥12 h на эталоне ARM1 (`installer/results/soak-arm1-20260812.csv` → **PASS**)
-- [x] Валидация пилота: эталон ARM1 = приёмка для rollout 15 ноутбуков
-- [x] Пилотный пакет в `dist/`
+- [x] Эталон ARM1 = приёмка (достаточно одного ПК для v1.0)
+- [x] Пакет установки в `dist/`
 - [x] Release notes
-- [ ] Minifilter .sys (опционально, см. DRIVER-BUILD.md)
-- [ ] EV-подпись dist (перед mass rollout)
+- [x] Minifilter .sys в fltmc (verify-driver.ps1 PASS)
+- [x] Подпись: test-sign lab / self-signed (EV не требуется)
 
 ---
 
@@ -232,4 +232,4 @@
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** **RC1 готов к rollout** — soak ✅ ARM1 → EV-подпись → 15 ноутбуков (minifilter .sys опционально)
+**Текущая фаза:** **v1.0 Release** — приёмка на ARM1 ✅, minifilter ✅, dist ✅

@@ -12,5 +12,5 @@ if(NOT WDK_KM_HEADERS)
 endif()
 
 message(STATUS "UserAuditFilter: WDK detected — add MSBuild/EWDK project manually for .sys output")
-message(STATUS "  Source: ${CMAKE_CURRENT_SOURCE_DIR}/UserAuditFilter.c")
+message(STATUS "  Source: ${CMAKE_CURRENT_SOURCE_DIR}/UserAuditFilter.cpp")
 message(STATUS "  INF:    ${CMAKE_CURRENT_SOURCE_DIR}/UserAuditFilter.inf")
