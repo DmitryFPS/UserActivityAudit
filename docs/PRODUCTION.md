@@ -47,4 +47,4 @@ msiexec /i Agent\UserAuditSetup.msi /quiet /norestart
 1. **Reboot-тест** на эталонной машине  
 2. **EV-подпись** dist  
 3. **Minifilter** — [DRIVER-BUILD.md](DRIVER-BUILD.md) (опционально для пилота)  
-4. **24h soak** — `Tools\soak-test.ps1` на каждой машине первую неделю
+4. **Soak ≥12 h** — `installer\soak-test.ps1` + `verify-soak.ps1` на эталоне (ARM1 PASS → rollout 15 ПК)

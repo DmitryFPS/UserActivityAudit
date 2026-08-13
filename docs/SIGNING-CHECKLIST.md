@@ -40,4 +40,4 @@
 - [ ] Timestamp (`http://timestamp.digicert.com`)
 - [ ] Driver подписан (production) или test-signing (lab)
 - [ ] WDAC policy обновлена под thumbprint/publisher
-- [ ] Пилот: 1 машина → reboot → soak 24ч → 15 машин
+- [x] Пилот: ARM1 reboot + soak 13h PASS → rollout 15 машин

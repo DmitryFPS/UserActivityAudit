@@ -9,8 +9,10 @@
 #include <tdh.h>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 namespace useraudit {
@@ -27,6 +29,8 @@ struct TraceContext {
     ProcessCollector* collector = nullptr;
     EventSink* writer = nullptr;
     std::string hostname;
+    std::mutex state_mutex;
+    std::unordered_set<unsigned long> active_pids;
 };
 
 TraceContext g_trace_context{};
@@ -170,6 +174,19 @@ void WINAPI process_event_callback(PEVENT_RECORD record) {
 
     const std::wstring image_path = query_process_path(pid);
     const std::string action = (opcode == 1) ? "start" : "stop";
+
+    {
+        std::lock_guard lock(g_trace_context.state_mutex);
+        if (action == "start") {
+            if (!g_trace_context.active_pids.insert(pid).second) {
+                return;
+            }
+        } else {
+            if (g_trace_context.active_pids.erase(pid) == 0) {
+                return;
+            }
+        }
+    }
 
     emit_process_event(*g_trace_context.writer, g_trace_context.hostname, action, pid, parent_pid,
                        image_name, image_path);

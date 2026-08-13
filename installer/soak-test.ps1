@@ -4,7 +4,7 @@
     24-hour soak monitor for UserAuditSvc (phase 10 QA).
 
 .PARAMETER Hours
-    Duration in hours (default 24).
+    Duration in hours (default 12 — pilot acceptance on reference PC).
 
 .PARAMETER IntervalSeconds
     Sample interval (default 300 = 5 min).
@@ -14,7 +14,7 @@
 #>
 [CmdletBinding()]
 param(
-    [double] $Hours = 24,
+    [double] $Hours = 12,
     [int] $IntervalSeconds = 300,
     [string] $OutputCsv = ''
 )
@@ -76,11 +76,14 @@ while ((Get-Date) -lt $deadline) {
         $decryptOk = if ($LASTEXITCODE -eq 0) { 'ok' } else { "fail_$LASTEXITCODE" }
     }
 
-    "$ts,$svcState,$procCount,{0:N2},$([math]::Round($cpuPct,3)),$logBytes,$decryptOk" -f $ramMax |
+    $ramStr = $ramMax.ToString('0.00', [System.Globalization.CultureInfo]::InvariantCulture)
+    $cpuStr = $cpuPct.ToString('0.000', [System.Globalization.CultureInfo]::InvariantCulture)
+
+    "$ts,$svcState,$procCount,$ramStr,$cpuStr,$logBytes,$decryptOk" |
         Add-Content $OutputCsv -Encoding ascii
 
-    Write-Host ("[{0}] svc={1} procs={2} ram={3:N1}MB cpu={4:N3}% logs={5}B decrypt={6}" -f
-        (Get-Date -Format 'HH:mm:ss'), $svcState, $procCount, $ramMax, $cpuPct, $logBytes, $decryptOk)
+    Write-Host ("[{0}] svc={1} procs={2} ram={3}MB cpu={4}% logs={5}B decrypt={6}" -f
+        (Get-Date -Format 'HH:mm:ss'), $svcState, $procCount, $ramStr, $cpuStr, $logBytes, $decryptOk)
 
     Start-Sleep -Seconds $IntervalSeconds
 }

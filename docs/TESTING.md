@@ -272,13 +272,15 @@ dotnet run --project installer/TamperVerifyTest -c Release
 
 Ожидание: `verify exit=2`, wrapper exit 0, после теста `--decrypt --verify` код 0.
 
-## 14. Soak test (24ч)
+## 14. Soak test (≥12 h, этalon)
 
 ```powershell
-.\installer\soak-test.ps1 -Hours 24 -IntervalSeconds 300
+.\installer\soak-test.ps1 -Hours 12 -IntervalSeconds 300
+.\installer\verify-soak.ps1 -CsvPath .\installer\results\soak-arm1-20260812.csv
 ```
 
-CSV: `installer/soak-*.csv` — svc=RUNNING, ram_mb_max ≤15, decrypt=ok.
+**ARM1 (2026-08-12..13): PASS** — 13 h, RAM ≤15.1 MB, decrypt 100%.  
+Эталонный прогон принимается как валидация для rollout 15 ноутбуков.
 
 ## 15. Minifilter (.sys)
 

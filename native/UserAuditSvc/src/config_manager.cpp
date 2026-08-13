@@ -392,6 +392,8 @@ bool parse_agent_config_json(const std::string& json, AgentConfig& out, std::str
             config.network_poll_sec = 60;
             config.file_poll_sec = 30;
             config.clipboard_poll_sec = 15;
+            config.collectors.process = false;
+            config.collectors.network = false;
             if (config.max_log_mb_per_day > 3) {
                 config.max_log_mb_per_day = 3;
             }
@@ -431,6 +433,8 @@ void ConfigManager::apply_profile(AuditProfile profile) {
             config_.network_poll_sec = 60;
             config_.file_poll_sec = 30;
             config_.clipboard_poll_sec = 15;
+            config_.collectors.process = false;
+            config_.collectors.network = false;
             break;
         case AuditProfile::Full:
             config_.window_poll_sec = 2;

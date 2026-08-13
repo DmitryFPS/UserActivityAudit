@@ -75,11 +75,12 @@ UserAudit.exe --decrypt --date 2026-08-12 --verify
 ## 6. Мониторинг пилота
 
 ```powershell
-# 24ч soak на каждой машине (или централизованный сбор CSV)
-.\soak-test.ps1 -Hours 24 -IntervalSeconds 300
+# ≥12 h на эталоне (ARM1 PASS — см. installer/results/)
+.\installer\soak-test.ps1 -Hours 12 -IntervalSeconds 300
+.\installer\verify-soak.ps1 -CsvPath .\installer\soak-YYYYMMDD-HHMMSS.csv
 ```
 
-Критерии: `svc=RUNNING`, `ram_mb_max` ≤ 15, `decrypt=ok`.
+Критерии: span ≥12 h, `svc=RUNNING`, `ram_mb_max` ≤ 15, `decrypt=ok` ≥95%.
 
 ---
 

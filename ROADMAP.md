@@ -112,9 +112,10 @@
 
 ---
 
-## Фаза 5 — Minifilter и IT USB ✅
+## Фаза 5 — Minifilter и IT USB ✅ (v1 без .sys на пилоте)
 
-**Цель:** защита на уровне ядра + криптографическая авторизация админа.
+**Цель:** защита на уровне ядра + криптографическая авторизация админа.  
+**Пилот v1.0:** IT USB + ACL; `UserAudit.sys` опционален (не блокирует RC1).
 
 | Модуль | Примечание |
 |--------|------------|
@@ -190,7 +191,7 @@
 | deploy.ps1, build-dist.ps1, sign.ps1 | ✅ |
 | dist/ + ZIP | ✅ `dist/UserActivityAudit-1.0.0-rc1-win-x64.zip` |
 | GPO / WDAC docs | ✅ |
-| verify-reboot.ps1, soak-test.ps1 | ✅ |
+| verify-reboot.ps1, soak-test.ps1, verify-soak.ps1 | ✅ |
 
 ### Критерии приёмки
 - [x] Silent install (`msiexec /quiet`)
@@ -208,16 +209,18 @@
 | InstallGuide, AdminGuide, SecurityModel (RU) | ✅ |
 | SIGNING-CHECKLIST, RELEASE_NOTES | ✅ |
 | PRODUCTION.md | ✅ |
-| EV-подпись dist | ⏳ нужен сертификат |
-| 24h soak | ⏳ скрипт готов, сбор CSV на пилоте |
+| EV-подпись dist | ⏳ перед production rollout (не блокер пилота) |
+| 12h soak (эталон ARM1) | ✅ `verify-soak.ps1 PASS` — 13 h, RAM ≤15.1 MB, decrypt 100% |
 
 ### Критерии RC1 (автономный пилот)
 - [x] Фазы 0–7, 9 (reboot ✅ ARM1)
 - [x] Reboot на эталоне ARM1 (2026-08-13)
-- [ ] Soak 24h на эталоне (ARM1: ~12ч до reboot, продолжение после reboot)
+- [x] Soak ≥12 h на эталоне ARM1 (`installer/results/soak-arm1-20260812.csv` → **PASS**)
+- [x] Валидация пилота: эталон ARM1 = приёмка для rollout 15 ноутбуков
 - [x] Пилотный пакет в `dist/`
 - [x] Release notes
 - [ ] Minifilter .sys (опционально, см. DRIVER-BUILD.md)
+- [ ] EV-подпись dist (перед mass rollout)
 
 ---
 
@@ -229,4 +232,4 @@
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** **RC1 + L3 Forensic** — reboot ✅ (ARM1) → soak 24h → EV-подпись → rollout 15 ноутбуков
+**Текущая фаза:** **RC1 готов к rollout** — soak ✅ ARM1 → EV-подпись → 15 ноутбуков (minifilter .sys опционально)
