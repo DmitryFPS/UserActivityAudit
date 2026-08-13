@@ -1,0 +1,62 @@
+﻿{
+    "version":  "1.0.0",
+    "timestamp":  "2026-08-13 09:44:26",
+    "pass":  true,
+    "details":  {
+                    "ctest":  "8/8 PASS",
+                    "SmokeImport":  "import PASS",
+                    "TamperVerifyTest":  "PASS",
+                    "verify-dist":  "C:\\Users\\adm\\Projects\\UserActivityAudit\\dist\\UserActivityAudit-1.0.0-win-x64.zip",
+                    "verify-soak":  "ARM1 CSV PASS",
+                    "verify-driver":  "fltmc + delete denied",
+                    "UserAuditSvc":  "RUNNING",
+                    "docs-sync":  "no stale patterns",
+                    "version":  "VERSION=1.0.0",
+                    "security-model":  "v1.0 deploy checklist"
+                },
+    "totalWeight":  100,
+    "earned":  100,
+    "score":  100,
+    "checks":  {
+                   "ctest":  {
+                                 "ok":  true,
+                                 "weight":  15
+                             },
+                   "SmokeImport":  {
+                                       "ok":  true,
+                                       "weight":  10
+                                   },
+                   "TamperVerifyTest":  {
+                                            "ok":  true,
+                                            "weight":  10
+                                        },
+                   "verify-dist":  {
+                                       "ok":  true,
+                                       "weight":  10
+                                   },
+                   "verify-soak":  {
+                                       "ok":  true,
+                                       "weight":  15
+                                   },
+                   "verify-driver":  {
+                                         "ok":  true,
+                                         "weight":  15
+                                     },
+                   "UserAuditSvc":  {
+                                        "ok":  true,
+                                        "weight":  5
+                                    },
+                   "docs-sync":  {
+                                     "ok":  true,
+                                     "weight":  10
+                                 },
+                   "version":  {
+                                   "ok":  true,
+                                   "weight":  5
+                               },
+                   "security-model":  {
+                                          "ok":  true,
+                                          "weight":  5
+                                      }
+               }
+}

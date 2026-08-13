@@ -1,7 +1,9 @@
 # QA Performance — UserActivityAudit v1.0
 
-Дата замеров: 2026-08-12..13, эталон **ARM1**, Windows 10.  
-**Модель приёмки v1.0:** один эталонный ПК (ARM1) — достаточно для release.
+Дата замеров: 2026-08-12..13, эталон **ARM1**, Windows 10.
+
+**Единственный объективный gate:** `.\installer\verify-release.ps1` — score ≥ 95% = PASS.  
+Не доверять процентам в markdown без вывода этого скрипта.
 
 ---
 
@@ -12,59 +14,48 @@
 | RAM (main PID) | **14.7–15.1 MB** | ≤ 15 MB | ✅ |
 | CPU idle (60 s) | **0,000%** | ≤ 0,3% | ✅ |
 
-*User-agent — отдельный процесс в сессии пользователя.*
+---
+
+## Soak / reboot / driver (ARM1)
+
+| Тест | Результат |
+|------|-----------|
+| soak ≥12 h | PASS — `installer/results/soak-arm1-20260812.csv` |
+| reboot | PASS — 2026-08-13 |
+| verify-driver | PASS — 2026-08-13 |
 
 ---
 
-## Soak test (≥12 h)
+## Release gate
 
-Скрипты: `installer/soak-test.ps1`, `installer/verify-soak.ps1`  
-Артефакт: `installer/results/soak-arm1-20260812.csv`
+```powershell
+.\installer\verify-release.ps1
+# JSON: installer/results/verify-release-latest.json
+```
 
-| Критерий | ARM1 |
-|----------|------|
-| Span | **13.0 h** (≥12 h) |
-| service_state | RUNNING (31/31) |
-| ram_mb_max | **15.08 MB** |
-| decrypt_ok | **100%** (после warmup) |
-| **Итог** | **PASS** |
+| Check | Weight |
+|-------|--------|
+| ctest | 15 |
+| SmokeImport | 10 |
+| TamperVerifyTest | 10 |
+| verify-dist | 10 |
+| verify-soak | 15 |
+| verify-driver | 15 |
+| UserAuditSvc RUNNING | 5 |
+| docs-sync | 10 |
+| VERSION 1.0.0 | 5 |
+| security-model | 5 |
 
-Reboot: `verify-reboot.ps1` **PASS** (2026-08-13).  
-Minifilter: `verify-driver.ps1` **PASS** (2026-08-13).
+**PASS:** сумма ≥ 95 из 100.
 
 ---
 
 ## CI (GitHub Actions)
 
-| Job | Проверка |
-|-----|----------|
-| build-native | cmake Release + Debug |
-| ctest Release | unit-тесты native |
-| dotnet admin | `UserActivityAudit.Admin.slnx` |
-| QA tools | SmokeImport, TamperVerifyTest |
+`build-native.yml`: cmake Release/Debug, ctest, admin build, SmokeImport, TamperVerifyTest.
 
 ---
 
-## Зрелость v1.0 — sign-off
+## v1.1+ (не блокирует v1.0)
 
-| Слой | Оценка | Примечание |
-|------|--------|------------|
-| L1/L2/L3 | 95% | функционал complete |
-| Crypto | 95% | DPAPI v1.0 by design; TPM → v1.1 |
-| Tamper | 95% | ACL + IT USB + minifilter (test-sign) |
-| Admin | 95% | Dashboard, отчёты, forensic |
-| Install | 95% | MSI, deploy, verify-* |
-| QA | 95% | ARM1 + CI |
-| Docs | 95% | синхронизированы с ROADMAP |
-| **Итого** | **≥95%** | standalone prod ready |
-
----
-
-## Вне scope v1.0 (v1.1+)
-
-| Пункт | Статус |
-|-------|--------|
-| EV Code Signing | опционально |
-| WHQL minifilter | опционально (test-sign достаточен) |
-| TPM seal DEK | v1.1+ |
-| VM 2 GB matrix | по желанию |
+EV Code Signing, WHQL minifilter, TPM seal DEK — опционально.

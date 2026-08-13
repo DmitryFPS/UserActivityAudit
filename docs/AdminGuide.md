@@ -72,7 +72,7 @@ UserAudit.exe --decrypt --date 2026-08-12 --verify
 
 ---
 
-## 6. Мониторинг пилота
+## 6. Soak / мониторинг (эталон ARM1)
 
 ```powershell
 # ≥12 h на эталоне (ARM1 PASS — см. installer/results/)

@@ -102,6 +102,7 @@ Copy-Item (Join-Path $RepoRoot 'installer\verify-reboot.ps1') $toolsDir -Force
 Copy-Item (Join-Path $RepoRoot 'installer\verify-soak.ps1') $toolsDir -Force
 Copy-Item (Join-Path $RepoRoot 'installer\verify-driver.ps1') $toolsDir -Force
 Copy-Item (Join-Path $RepoRoot 'installer\verify-dist.ps1') $toolsDir -Force
+Copy-Item (Join-Path $RepoRoot 'installer\verify-release.ps1') $toolsDir -Force
 
 if (Test-Path $DriverSys) {
     New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'Driver') | Out-Null

@@ -46,12 +46,12 @@ Dashboard читает `%ProgramData%\UserAudit\logs` с `FileShare.ReadWrite` �
 
 ## GPO (Active Directory)
 
-Рекомендуемый порядок пилота (15 ноутбуков):
+Развёртывание на эталоне ARM1 (1 ПК достаточно для v1.0) или fleet через GPO:
 
-1. **GPO — служба:** запрет остановки `UserAuditSvc` для обычных пользователей (настройки службы через GPO Security или SDDL).
+1. **GPO — служба:** запрет остановки `UserAuditSvc` для обычных пользователей.
 2. **GPO — автозапуск:** `deploy.ps1` или MSI через startup script (SYSTEM).
-3. **GPO — BitLocker:** напоминание включить шифрование диска (логи защищены DPAPI, но диск — базовый слой).
-4. **Локальный admin:** выдать IT USB (`UserAuditKeygen` → `org.key` на флешке) только службе безопасности.
+3. **GPO — BitLocker:** рекомендуется на диске.
+4. **IT USB:** `org.key` только у IT Security (`UserAuditKeygen`).
 
 Шаблон startup script (GPO → Computer Configuration → Scripts → Startup):
 
@@ -61,11 +61,12 @@ Dashboard читает `%ProgramData%\UserAudit\logs` с `FileShare.ReadWrite` �
 
 ## WDAC
 
-Политика WDAC должна разрешать:
-- `C:\Program Files\UserAudit\*.exe` (после EV-подписи в фазе 10)
-- `UserAudit.Dashboard.exe` (если публикуется self-contained в `Program Files`)
+v1.0: бинарники **unsigned**. Политика WDAC должна разрешать пути (Audit → Enforce):
 
-До подписи — режим Audit Only на тестовой VM.
+- `C:\Program Files\UserAudit\*.exe`
+- `UserAudit.Dashboard.exe` (если установлен в Program Files)
+
+Шаблон: `installer/wdac/`. EV-подпись — опционально (v1.1+).
 
 ## Проверка после деплоя
 

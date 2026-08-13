@@ -117,7 +117,7 @@ sc start UserAuditSvc
 
 ---
 
-## 5. Замер RAM (критерий пилота)
+## 5. Замер RAM (Low profile)
 
 На машине с 2 ГБ ОЗУ или VM:
 
@@ -150,15 +150,16 @@ Get-Counter '\Process(UserAudit)\% Processor Time' -SampleInterval 1 -MaxSamples
 
 ---
 
-## 7. Чеклист перед пилотом (15 ноутбуков)
+## 7. Чеклист v1.0 (эталон ARM1)
 
-- [ ] Unit-тесты: все PASS
-- [ ] Reboot: служба поднимается сама
-- [ ] `--decrypt --verify`: код 0
+- [x] Unit-тесты: все PASS (`ctest`)
+- [x] Reboot: `verify-reboot.ps1` PASS (ARM1)
+- [x] Soak ≥12 h: `verify-soak.ps1` PASS (ARM1)
+- [x] Minifilter: `verify-driver.ps1` PASS (ARM1)
+- [ ] `--decrypt --verify`: код 0 на целевой машине
 - [ ] USB → file.create с correlation
-- [ ] network.snapshot с pid + remote
-- [ ] RAM ≤ 15 МБ (Low) или ≤ 20 МБ (Standard)
-- [ ] config.json меняется без пересборки (перезапуск службы)
+- [ ] RAM ≤ 15 МБ (Low)
+- [ ] Release gate: `.\installer\verify-release.ps1` ≥ 95%
 
 ---
 

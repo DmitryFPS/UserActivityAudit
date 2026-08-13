@@ -157,12 +157,15 @@ UserAudit.exe --decrypt --date 2026-08-12 --verify
 
 ---
 
-## Внешние зависимости (пилот)
+## Внешние зависимости (v1.0 standalone)
 
-- EV-сертификат подписи кода (агент + админка)
-- Подпись драйвера Microsoft (UserAudit.sys)
-- IT USB с org Ed25519 key
-- BitLocker на всех пилотных ноутбуках
+| Зависимость | v1.0 | v1.1+ |
+|-------------|------|-------|
+| IT USB (org Ed25519) | **обязательно** | — |
+| test-signing (minifilter lab) | **да** | WHQL вместо testsigning |
+| WDAC / AppLocker для unsigned exe | **да** (GPO) | EV-подпись опционально |
+| BitLocker | рекомендуется | — |
+| Центральный сервер | **нет** | — |
 
 ---
 
