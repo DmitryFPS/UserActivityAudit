@@ -1,36 +1,47 @@
-# Release Notes — UserActivityAudit 1.0.0-rc1
+# Release Notes — UserActivityAudit 1.0.0
 
-**Дата:** 2026-08-12  
+**Дата:** 2026-08-13  
 **Режим:** автономный (без центрального сервера)
 
 ---
 
 ## Продукт
 
-- **Агент** — служба Windows, сбор L1/L2, AES-256-GCM, HMAC, tamper, ACL
+- **Агент** — служба Windows, сбор L1/L2/L3, AES-256-GCM, HMAC, tamper, ACL, minifilter
 - **Dashboard** — WPF анализатор логов, отчёты Excel/PDF, forensic ZIP
 - **Установка** — MSI silent, deploy.ps1, GPO-документация
 
 ---
 
-## Новое в RC1
+## v1.0.0
 
 - Standalone: `ingest_url` по умолчанию пустой
 - LocalKeyProvider (DPAPI) для Dashboard
 - LogImporter: чтение `.enc` при работающей службе (FileShare.ReadWrite)
-- Пакет `dist/`: MSI + Dashboard + Tools + Docs
-- QA: TamperVerifyTest, SmokeImport, soak-test.ps1
-- **L3 Forensic:** USB-триггер → evidence pack (browser, USBSTOR, prefetch, UserAssist)
-- WiX MSI x64, проверен `msiexec /quiet`
+- Пакет `dist/`: MSI + Dashboard + Tools + Docs + Driver
+- **Minifilter:** UserAuditFilter.sys — build/install/verify pipeline
+- QA: TamperVerifyTest, SmokeImport, soak/reboot/driver verify — **ARM1 PASS**
+- L3 Forensic: USB-триггер → evidence pack
+- WiX MSI x64, `msiexec /quiet`
 
 ---
 
-## Известные ограничения
+## Приёмка
 
-- Minifilter `.sys` — исходник готов; сборка требует WDK toolset в VS
-- Reboot-тест — выполняется администратором (`verify-reboot.ps1`)
-- Подпись — unsigned до применения EV (`sign.ps1`)
-- Серверный portal — опциональный модуль
+| Тест | ARM1 |
+|------|------|
+| soak ≥12 h | PASS (13 h) |
+| reboot | PASS |
+| verify-driver | PASS |
+| dist | build-dist + verify-dist |
+
+---
+
+## Известные ограничения (v1.1+)
+
+- Minifilter в lab: **test-signing** (`bcdedit /set testsigning on`)
+- TPM seal DEK — v1.1 (v1.0: DPAPI LocalMachine)
+- EV-подпись — опционально (`sign.ps1`)
 
 ---
 

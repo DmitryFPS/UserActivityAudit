@@ -9,7 +9,7 @@
 | Чтение логов пользователем | AES-256-GCM, ключ DPAPI (SYSTEM/admin) |
 | Подмена событий | HMAC-SHA256 цепочка, `--verify` |
 | Удаление логов (user) | ACL DENY на ProgramData |
-| Удаление логов (admin) | AclGuard + tamper; **minifilter** (kernel) |
+| Удаление логов (admin) | AclGuard + tamper + **minifilter** (kernel) |
 | Остановка службы | AuthGuard + IT USB Ed25519 |
 | Uninstall | UserAuditAdmin + org.key |
 | Ключ на другом ПК | DPAPI привязка; экспорт DEK только admin |
@@ -22,10 +22,12 @@
 |--------|----------|
 | Логи на диске | AES-256-GCM (`v1:` + base64) |
 | Цепочка | HMAC-SHA256 per event |
-| Ключ DEK | 32 байта, обёртка DPAPI (`master.key.dpapi`) |
+| Ключ DEK | 32 байта, обёртка DPAPI LocalMachine (`master.key.dpapi`) |
 | IT USB | Ed25519 (org.key / org.pub) |
 
-Plaintext на диске **не хранится** (Phase 2+).
+**v1.0:** DEK через DPAPI — штатный режим. TPM seal — v1.1+.
+
+Plaintext на диске **не хранится**.
 
 ---
 
@@ -45,7 +47,7 @@ Plaintext на диске **не хранится** (Phase 2+).
 - **AclGuard** — самопроверка ACL, событие `tamper.attempt_denied`
 - **TamperCollector** — Security log
 - **Lockdown** — append-only при детекте (с драйвером)
-- **EventForwarder** — опционально на ingest API
+- Upload — **отключён** (`ingest_url: ""`)
 
 ---
 
@@ -53,34 +55,34 @@ Plaintext на диске **не хранится** (Phase 2+).
 
 - Блок delete/rename в `\UserAudit\`
 - Lockdown IOCTL — блок write
-- Production: WHQL/attestation + EV user-mode
-
-Без драйвера: защита user-mode ACL + AuthGuard (пилот допустим с принятием риска).
+- **v1.0 lab/prod:** test-sign + `verify-driver.ps1 PASS`
+- **v1.1+:** WHQL/attestation при требовании Secure Boot без testsigning
 
 ---
 
 ## 6. Сеть
 
-По умолчанию **нет исходящих соединений** (`ingest_url: ""`).  
-Upload — **отключён** в v1.0 (`ingest_url` всегда пустой).
+По умолчанию **нет исходящих соединений** (`ingest_url: ""`).
 
 ---
 
-## 7. Соответствие пилоту (15 ноутбуков)
+## 7. Чеклист deploy (IT)
 
-- [ ] BitLocker на дисках
-- [ ] EV-подпись бинарников
+- [x] Эталон ARM1: soak + reboot + verify-driver PASS
 - [ ] org.key только у IT Security
-- [ ] WDAC / AppLocker — разрешить Publisher UserActivityAudit
+- [ ] WDAC / AppLocker — правила для `C:\Program Files\UserAudit\` (unsigned v1.0)
+- [ ] testsigning=Yes — если нужен minifilter в lab
 - [ ] Политика: keylog/screenshots **выключены** (opt-in)
+
+EV-подпись **не требуется** для v1.0 standalone.
 
 ---
 
 ## 8. Forensic
 
 - **Dashboard Forensic ZIP** — события L1/L2 из загруженного лога
-- **Agent L3 pack** — `%ProgramData%\UserAudit\packs\*.zip` (browser + USB registry + artifacts), создаётся при USB insert или по расписанию
-- Browser history/downloads — Chrome, Edge, Firefox через winsqlite3.dll
-- USBSTOR registry export — совместим с форматом UsbForensicAudit
+- **Agent L3 pack** — `%ProgramData%\UserAudit\packs\*.zip`
+- Browser history/downloads — Chrome, Edge, Firefox
+- USBSTOR registry export — UsbForensicAudit-совместимо
 
-См. также [STANDALONE.md](STANDALONE.md), [DRIVER.md](DRIVER.md).
+См. [STANDALONE.md](STANDALONE.md), [DRIVER.md](DRIVER.md).

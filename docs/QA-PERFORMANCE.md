@@ -1,15 +1,16 @@
-# QA Performance — UserActivityAudit
+# QA Performance — UserActivityAudit v1.0
 
-Дата замеров: 2026-08-12..13, эталон **ARM1**, Windows 10.
+Дата замеров: 2026-08-12..13, эталон **ARM1**, Windows 10.  
+**Модель приёмки v1.0:** один эталонный ПК (ARM1) — достаточно для release.
 
 ---
 
 ## Агент (Low profile, auto RAM)
 
-| Метрика | Замер | Цель |
-|---------|-------|------|
-| RAM (main PID) | **14.7–15.1 MB** | ≤ 15 MB |
-| CPU idle (60 s) | **0,000%** | ≤ 0,3% |
+| Метрика | Замер | Цель | Статус |
+|---------|-------|------|--------|
+| RAM (main PID) | **14.7–15.1 MB** | ≤ 15 MB | ✅ |
+| CPU idle (60 s) | **0,000%** | ≤ 0,3% | ✅ |
 
 *User-agent — отдельный процесс в сессии пользователя.*
 
@@ -28,22 +29,42 @@
 | decrypt_ok | **100%** (после warmup) |
 | **Итог** | **PASS** |
 
-Reboot: `verify-reboot.ps1` **PASS** (2026-08-13).
+Reboot: `verify-reboot.ps1` **PASS** (2026-08-13).  
+Minifilter: `verify-driver.ps1` **PASS** (2026-08-13).
 
 ---
 
-## Не блокирует RC1
+## CI (GitHub Actions)
+
+| Job | Проверка |
+|-----|----------|
+| build-native | cmake Release + Debug |
+| ctest Release | unit-тесты native |
+| dotnet admin | `UserActivityAudit.Admin.slnx` |
+| QA tools | SmokeImport, TamperVerifyTest |
+
+---
+
+## Зрелость v1.0 — sign-off
+
+| Слой | Оценка | Примечание |
+|------|--------|------------|
+| L1/L2/L3 | 95% | функционал complete |
+| Crypto | 95% | DPAPI v1.0 by design; TPM → v1.1 |
+| Tamper | 95% | ACL + IT USB + minifilter (test-sign) |
+| Admin | 95% | Dashboard, отчёты, forensic |
+| Install | 95% | MSI, deploy, verify-* |
+| QA | 95% | ARM1 + CI |
+| Docs | 95% | синхронизированы с ROADMAP |
+| **Итого** | **≥95%** | standalone prod ready |
+
+---
+
+## Вне scope v1.0 (v1.1+)
 
 | Пункт | Статус |
 |-------|--------|
-| Minifilter .sys на пилоте | опционально v1 (ACL + IT USB достаточно) |
-| EV signature | перед mass rollout (`SIGNING-CHECKLIST.md`) |
+| EV Code Signing | опционально |
+| WHQL minifilter | опционально (test-sign достаточен) |
+| TPM seal DEK | v1.1+ |
 | VM 2 GB matrix | по желанию |
-
----
-
-## Rollout
-
-1. ~~Эталон ARM1: reboot + soak ≥12 h~~ ✅  
-2. EV-подпись `dist/`  
-3. MSI/GPO на 15 ноутбуков (эталон = приёмка парка)

@@ -99,6 +99,9 @@ Copy-Item (Join-Path $RepoRoot 'installer\SmokeImport\bin\Release\net10.0\*') $t
 Copy-Item (Join-Path $RepoRoot 'installer\TamperVerifyTest\bin\Release\net10.0\*') $toolsDir -Force -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $RepoRoot 'installer\soak-test.ps1') $toolsDir -Force
 Copy-Item (Join-Path $RepoRoot 'installer\verify-reboot.ps1') $toolsDir -Force
+Copy-Item (Join-Path $RepoRoot 'installer\verify-soak.ps1') $toolsDir -Force
+Copy-Item (Join-Path $RepoRoot 'installer\verify-driver.ps1') $toolsDir -Force
+Copy-Item (Join-Path $RepoRoot 'installer\verify-dist.ps1') $toolsDir -Force
 
 if (Test-Path $DriverSys) {
     New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'Driver') | Out-Null
@@ -118,7 +121,7 @@ foreach ($rel in $docFiles) {
 }
 
 @"
-UserActivityAudit $Version — pilot package
+UserActivityAudit $Version — release package
 Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm')
 
 Agent/

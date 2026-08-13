@@ -18,7 +18,7 @@ public:
     const std::uint8_t* dek() const { return dek_.data(); }
     const std::uint8_t* hmac_key() const { return hmac_key_.data(); }
 
-    // Phase 3+: TPM seal replaces stub.
+    // v1.0: DPAPI LocalMachine. v1.1+: optional TPM seal.
     bool tpm_seal_available() const { return false; }
 
 private:

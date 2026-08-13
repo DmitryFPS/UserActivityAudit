@@ -18,5 +18,18 @@ jobs:
       - name: Build Release
         run: cmake --build build/native --config Release
 
+      - name: Unit tests (Release)
+        run: ctest --test-dir build/native -C Release --output-on-failure
+
       - name: Build Debug
         run: cmake --build build/native --config Debug
+
+      - name: Build Admin
+        run: |
+          dotnet restore admin/UserActivityAudit.Admin.slnx
+          dotnet build admin/UserActivityAudit.Admin.slnx -c Release
+
+      - name: QA tools
+        run: |
+          dotnet build installer/SmokeImport/SmokeImport.csproj -c Release
+          dotnet build installer/TamperVerifyTest/TamperVerifyTest.csproj -c Release

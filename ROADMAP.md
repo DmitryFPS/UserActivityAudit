@@ -59,7 +59,7 @@
 | Модуль | Технология |
 |--------|------------|
 | EncryptedLogWriter | BCrypt AES-256-GCM, потоковая запись |
-| KeyManager | DPAPI (SYSTEM) + заглушка TPM seal |
+| KeyManager | DPAPI LocalMachine (v1.0); TPM seal — v1.1+ |
 | HashChain | HMAC-SHA256 на каждое событие |
 | LogRotation | Файл по дням, лимит размера (50 МБ) |
 
@@ -189,7 +189,7 @@
 |-----------|--------|
 | UserAuditSetup.msi | ✅ |
 | deploy.ps1, build-dist.ps1, sign.ps1 | ✅ |
-| dist/ + ZIP | ✅ `dist/UserActivityAudit-1.0.0-rc1-win-x64.zip` |
+| dist/ + ZIP | ✅ `dist/UserActivityAudit-1.0.0-win-x64.zip` |
 | GPO / WDAC docs | ✅ |
 | verify-reboot.ps1, soak-test.ps1, verify-soak.ps1 | ✅ |
 
@@ -232,4 +232,4 @@
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** **v1.0 Release** — приёмка на ARM1 ✅, minifilter ✅, dist ✅
+**Текущая фаза:** **v1.0 Release — зрелость ≥95%** (ARM1, dist, CI, docs)

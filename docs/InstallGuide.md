@@ -81,9 +81,15 @@ UserAudit.exe --uninstall
 
 ---
 
-## 7. Minifilter (опционально)
+## 7. Minifilter
 
-См. [DRIVER.md](DRIVER.md). Требует test-signing (lab) или WHQL (production).
+Входит в `deploy.ps1` (или `install-driver.ps1`). Требует **testsigning** в lab или WHQL в v1.1+.
+
+```powershell
+.\Tools\verify-driver.ps1
+```
+
+См. [DRIVER.md](DRIVER.md).
 
 ---
 
