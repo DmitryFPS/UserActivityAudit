@@ -60,5 +60,12 @@ TestResults/
 coverage/
 *.trx
 
+# Local scratch (accidental / one-off)
+/query
+admin/query
+installer/capture-dashboard.ps1
+installer/dashboard-screenshot.png
+installer/soak-20*.csv
+
 # Docker volumes
 docker/data/
