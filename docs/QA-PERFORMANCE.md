@@ -1,61 +1,28 @@
-# QA Performance — UserActivityAudit v1.0
-
-Дата замеров: 2026-08-12..13, эталон **ARM1**, Windows 10.
-
-**Единственный объективный gate:** `.\installer\verify-release.ps1` — score ≥ 95% = PASS.  
-Не доверять процентам в markdown без вывода этого скрипта.
-
----
-
-## Агент (Low profile, auto RAM)
-
-| Метрика | Замер | Цель | Статус |
-|---------|-------|------|--------|
-| RAM (main PID) | **14.7–15.1 MB** | ≤ 15 MB | ✅ |
-| CPU idle (60 s) | **0,000%** | ≤ 0,3% | ✅ |
-
----
-
-## Soak / reboot / driver (ARM1)
-
-| Тест | Результат |
-|------|-----------|
-| soak ≥12 h | PASS — `installer/results/soak-arm1-20260812.csv` |
-| reboot | PASS — 2026-08-13 |
-| verify-driver | PASS — 2026-08-13 |
-
----
-
-## Release gate
+# QA — единственная метрика
 
 ```powershell
 .\installer\verify-release.ps1
-# JSON: installer/results/verify-release-latest.json
 ```
 
-| Check | Weight |
-|-------|--------|
-| ctest | 15 |
-| SmokeImport | 10 |
-| TamperVerifyTest | 10 |
-| verify-dist | 10 |
-| verify-soak | 15 |
-| verify-driver | 15 |
-| UserAuditSvc RUNNING | 5 |
-| docs-sync | 10 |
-| VERSION 1.0.0 | 5 |
-| security-model | 5 |
+**PASS ≥ 95%** → `installer/results/verify-release-latest.json`
 
-**PASS:** сумма ≥ 95 из 100.
+| Check | Pts |
+|-------|-----|
+| admin-build | 7 |
+| ctest | 9 |
+| SmokeImport | 7 |
+| TamperVerify | 7 |
+| verify-dist | 9 |
+| verify-scripts | 5 |
+| verify-soak | 10 |
+| verify-driver | 10 |
+| decrypt-verify | 10 |
+| UserAuditSvc | 4 |
+| docs | 7 |
+| wdac-template | 4 |
+| ci-workflow | 4 |
+| version | 3 |
+| security-model | 4 |
+| **Итого** | **100** |
 
----
-
-## CI (GitHub Actions)
-
-`build-native.yml`: cmake Release/Debug, ctest, admin build, SmokeImport, TamperVerifyTest.
-
----
-
-## v1.1+ (не блокирует v1.0)
-
-EV Code Signing, WHQL minifilter, TPM seal DEK — опционально.
+Никаких других % в репозитории. Canvas читает только JSON.

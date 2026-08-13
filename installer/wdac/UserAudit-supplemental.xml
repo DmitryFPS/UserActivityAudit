@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Supplemental WDAC template — v1.0 unsigned path allow. Audit before Enforce. -->
+<SiPolicy xmlns="urn:schemas-microsoft-com:sipolicy" PolicyType="Supplemental">
+  <VersionEx>10.0.0.0</VersionEx>
+  <PlatformID>{2E07F7EF-2436-4E8F-958A-0A787322473C}</PlatformID>
+  <Rules>
+    <Rule Type="Exe" Id="id-useraudit-agent" Name="UserAudit Agent Path" Description="Allow UserAudit install dir" UserOrGroupSid="S-1-1-0" Action="Allow">
+      <Conditions>
+        <FilePathCondition Path="C:\Program Files\UserAudit\*" />
+      </Conditions>
+    </Rule>
+  </Rules>
+  <Signers />
+  <SigningScenarios>
+    <SigningScenario Value="131" ID="ID_SIGNINGSCENARIO_DRIVERS_1" FriendlyName="Driver signing scenarios" />
+    <SigningScenario Value="12" ID="ID_SIGNINGSCENARIO_WINDOWS" FriendlyName="User mode signing scenarios">
+      <ProductSigners />
+    </SigningScenario>
+  </SigningScenarios>
+  <UpdatePolicySigners />
+  <CiSigners />
+  <HvciOptions>0</HvciOptions>
+  <BasePolicyID>{00000000-0000-0000-0000-000000000000}</BasePolicyID>
+  <PolicyID>{11111111-1111-1111-1111-111111111111}</PolicyID>
+</SiPolicy>
