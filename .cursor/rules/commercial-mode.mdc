@@ -8,11 +8,10 @@ alwaysApply: true
 ## Product scope
 - Commercial-grade user activity audit for Windows 10/11 (pilot fleet: 15 laptops).
 - **Not** a prototype. No "we'll fix later" stubs in merged code.
-- Full stack: C++ agent (L1+L2+L3), minifilter driver, server (ingest/escrow/alerts/portal), C# admin suite.
+- **Standalone v1.0:** C++ agent (L1+L2+L3), minifilter driver, C# admin suite (WPF on same PC). **No central server.**
 
 ## Architecture rules
 - **Client (native/)**: C++20 only. Windows Service. Target ≤15 MB RAM on 2 GB PCs (Low profile).
-- **Server (server/)**: C# .NET 10 — ingest, escrow, alerts, web portal.
 - **Admin (admin/)**: C# .NET 10 — WPF dashboard, reports, forensic, LogImporter.
 - **No .NET on client laptops.**
 
@@ -24,14 +23,14 @@ alwaysApply: true
 - Minimize diff scope; match existing conventions.
 
 ## Security (non-negotiable)
-- Logs: AES-256-GCM at rest, DEK split (TPM + USB), server escrow, HMAC hash chain.
+- Logs: AES-256-GCM at rest, DEK (DPAPI/TPM + USB split where configured), HMAC hash chain on disk.
 - Tamper: minifilter + IT USB Ed25519 for uninstall/stop (Phase 5+).
 - No hardcoded secrets. No plaintext logs on disk after Phase 2.
 - Keylog/screenshots: opt-in modules only; off by default.
 
 ## Out of scope unless explicitly requested
 - Prototype shortcuts (plaintext logs, hardcoded config, skip tests).
-- Simplifying to "network share only" instead of server stack.
+- Central server / Docker ingest / web portal (removed from repo).
 - Committing unless user asks.
 
 ## Reference docs

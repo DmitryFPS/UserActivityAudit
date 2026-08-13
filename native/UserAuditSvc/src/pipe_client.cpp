@@ -17,8 +17,8 @@ bool PipeClient::connect(unsigned retry_ms, unsigned max_attempts) {
     disconnect();
 
     for (unsigned attempt = 0; attempt < max_attempts; ++attempt) {
-        pipe_ = CreateFileW(kEventPipeName, GENERIC_WRITE | GENERIC_READ, 0, nullptr,
-                            OPEN_EXISTING, 0, nullptr);
+        pipe_ = CreateFileW(kEventPipeName, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0,
+                            nullptr);
         if (pipe_ != INVALID_HANDLE_VALUE) {
             return true;
         }
@@ -35,12 +35,11 @@ void PipeClient::disconnect() {
     }
 }
 
-bool PipeClient::write(const AuditEvent& event) {
+bool PipeClient::try_write_payload(const std::string& json) {
     if (pipe_ == INVALID_HANDLE_VALUE) {
         return false;
     }
 
-    const std::string json = serialize_event_json(event);
     const auto length = static_cast<std::uint32_t>(json.size());
 
     DWORD written = 0;
@@ -59,6 +58,20 @@ bool PipeClient::write(const AuditEvent& event) {
     }
 
     return true;
+}
+
+bool PipeClient::write(const AuditEvent& event) {
+    const std::string json = serialize_event_json(event);
+    if (try_write_payload(json)) {
+        return true;
+    }
+
+    disconnect();
+    if (!connect(200, 15)) {
+        return false;
+    }
+
+    return try_write_payload(json);
 }
 
 }  // namespace useraudit

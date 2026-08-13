@@ -11,10 +11,10 @@
 |----------|----------|
 | Продукт | Аудит действий пользователя Windows 10/11 |
 | Клиент | Служба C++20, ≤15 МБ ОЗУ (профиль Low) |
-| Сервер | .NET 10 — ingest, escrow, alerts, веб-портал |
+| Анализ | WPF на том же ПК (или копия логов + экспорт DEK) |
 | Админка | .NET 10 — WPF, Excel/PDF, forensic |
-| Безопасность | AES-256-GCM, split key TPM+USB, minifilter, IT USB |
-| Деплой | MSI silent, GPO, Docker-сервер |
+| Безопасность | AES-256-GCM, DPAPI/TPM+USB, minifilter, IT USB |
+| Деплой | MSI silent, GPO, deploy.ps1 |
 
 **УТП:** forensic-уровень аудита + лёгкий агент + защита от локального админа + шифрованные логи.
 
@@ -102,9 +102,8 @@
 См. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```
-Клиент: UserAudit.sys + UserAuditSvc + Watchdog
-Сервер: Ingest + Escrow + Alerts + Portal (Docker)
-Админка: Dashboard + Reports + Forensic + UserAuditAdmin (IT USB)
+Клиент: UserAudit.sys + UserAuditSvc + Watchdog → шифрованные логи
+Анализ: Dashboard + Reports + Forensic + UserAuditAdmin (IT USB) на ПК администратора
 ```
 
 ---
@@ -138,8 +137,7 @@
 
 ### Шифрование
 - AES-256-GCM потоково (BCrypt)
-- DEK = K_machine (TPM-sealed) ⊕ K_usb (32 байта на IT USB)
-- Escrow на сервере (RSA-OAEP wrap DEK)
+- DEK = K_machine (DPAPI) ⊕ K_usb (32 байта на IT USB, опционально)
 - HMAC-цепочка на каждое событие
 
 ### Tamper
@@ -167,14 +165,9 @@
 
 ---
 
-## 11. Сервер (commercial)
+## 11. Центральный сервер
 
-| Сервис | Роль |
-|--------|------|
-| UserAudit.Ingest | mTLS upload, хранение |
-| UserAudit.Escrow | Vault DEK, ротация |
-| UserAudit.Alerts | Движок правил, notify |
-| UserAudit.Portal | Хосты, timeline, admin |
+**Не используется.** Ранний черновик (Ingest/Escrow/Portal) удалён из репозитория. v1.0 — только standalone ([docs/STANDALONE.md](docs/STANDALONE.md)).
 
 ---
 
@@ -200,7 +193,6 @@
 
 - EV code signing
 - Подпись драйвера Microsoft (HLK) для UserAudit.sys
-- Сервер (VPS/on-prem)
 - IT USB с org key
 - BitLocker на пилотных ноутбуках
 

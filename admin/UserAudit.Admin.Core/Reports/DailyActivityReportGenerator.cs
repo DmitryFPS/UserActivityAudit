@@ -21,7 +21,10 @@ public static class DailyActivityReportGenerator
         var topApps = dayEvents
             .Where(x => x.Category.Equals("process", StringComparison.OrdinalIgnoreCase) &&
                         x.Action.Equals("start", StringComparison.OrdinalIgnoreCase))
-            .Select(x => x.Data.TryGetValue("exe", out var exe) ? exe : x.Data.TryGetValue("name", out var name) ? name : "unknown")
+            .Select(x => x.Data.TryGetValue("path", out var path) ? Path.GetFileName(path) :
+                         x.Data.TryGetValue("exe", out var exe) ? exe :
+                         x.Data.TryGetValue("image_name", out var image) ? image :
+                         x.Data.TryGetValue("name", out var name) ? name : "unknown")
             .GroupBy(x => x, StringComparer.OrdinalIgnoreCase)
             .OrderByDescending(g => g.Count())
             .Take(15)

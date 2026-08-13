@@ -22,7 +22,7 @@
 |----------|--------------|----------|
 | `-Profile` | `auto` | `low` / `standard` / `full` / `auto` |
 | `-HostId` | имя ПК | Поле `host_id` в логах |
-| `-IngestUrl` | `""` | Пусто = без upload; иначе URL ingest API |
+| `-IngestUrl` | `""` | Должен оставаться пустым (standalone, без upload) |
 | `-SkipBuild` | — | Не пересобирать артефакты |
 | `-SkipSmoke` | — | Пропустить SmokeImport |
 

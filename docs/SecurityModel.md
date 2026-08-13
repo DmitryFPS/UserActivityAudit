@@ -62,7 +62,7 @@ Plaintext на диске **не хранится** (Phase 2+).
 ## 6. Сеть
 
 По умолчанию **нет исходящих соединений** (`ingest_url: ""`).  
-Upload — TLS (WinHTTP), опционально mTLS (server stack).
+Upload — **отключён** в v1.0 (`ingest_url` всегда пустой).
 
 ---
 

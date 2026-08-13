@@ -46,10 +46,8 @@ dotnet run --project admin/UserAudit.Dashboard -c Release
 | [docs/DEPLOY.md](docs/DEPLOY.md) | deploy.ps1, MSI, GPO |
 | [docs/SETUP.md](docs/SETUP.md) | Установка, `--decrypt`, служба |
 | [docs/BUILD.md](docs/BUILD.md) | Сборка native |
-| [ANALYTICS.md](ANALYTICS.md) | Полная спецификация (включая опциональный server) |
+| [ANALYTICS.md](ANALYTICS.md) | Полная спецификация продукта |
 | [ROADMAP.md](ROADMAP.md) | Фазы разработки |
-
-Опциональный серверный стек (Ingest/Portal): [server/README.md](server/README.md).
 
 ## Лицензия
 

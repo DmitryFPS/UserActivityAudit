@@ -3,8 +3,10 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using UserAudit.Admin.Core.Crypto;
+using UserAudit.Admin.Core.Display;
 using UserAudit.Admin.Core.Forensic;
 using UserAudit.Admin.Core.Import;
+using UserAudit.Admin.Core.Models;
 using UserAudit.Admin.Core.Reports;
 
 namespace UserAudit.Dashboard;
@@ -15,6 +17,7 @@ public partial class MainWindow : Window
     private readonly LogImporter _importer = new();
     private readonly LocalLogService _localLogs;
     private readonly DispatcherTimer _autoRefreshTimer;
+    private int _timelineFilterGeneration;
 
     public MainWindow()
     {
@@ -44,16 +47,16 @@ public partial class MainWindow : Window
             ? $"{ts.ToLocalTime():g} ({_store.LastKeySource ?? "—"})"
             : "ещё не загружалось";
 
-        TimelineGrid.ItemsSource = events
-            .Select(x => new
-            {
-                TimestampUtc = x.TimestampUtc.ToString("u"),
-                x.Category,
-                x.Action,
-                x.Severity,
-                SourceFile = x.SourceFile is null ? string.Empty : Path.GetFileName(x.SourceFile),
-            })
-            .ToList();
+        CategoryBreakdownText.Text = string.Join(" · ",
+            events
+                .GroupBy(x => x.Category, StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(g => g.Count())
+                .Select(g => $"{g.Key}: {g.Count()}"));
+
+        var summary = AuditEventFilter.BuildSummary(events);
+        MonitoringSummaryText.Text = "…";
+
+        RefreshTimelineGrid(events, summary);
 
         AlertsGrid.ItemsSource = alerts
             .Select(x => new
@@ -75,6 +78,70 @@ public partial class MainWindow : Window
                 VidPid = $"{x.Data.GetValueOrDefault("vid")}:{x.Data.GetValueOrDefault("pid")}",
             })
             .ToList();
+    }
+
+    private TimelineFilterOptions ReadTimelineFilters() => new(
+        EmployeeMonitoring: EmployeeMonitoringCheck?.IsChecked == true,
+        HideNetworkSnapshots: HideNetworkSnapshotsCheck?.IsChecked == true,
+        HideProcessEvents: HideProcessCheck?.IsChecked == true,
+        HideTamperEvents: HideTamperCheck?.IsChecked == true);
+
+    private void RefreshTimelineGrid(IReadOnlyList<AuditEventModel> events, MonitoringSummary? summary = null)
+    {
+        var filters = ReadTimelineFilters();
+        var generation = Interlocked.Increment(ref _timelineFilterGeneration);
+        TimelineFilterStatusText.Text = "Фильтрация…";
+        summary ??= AuditEventFilter.BuildSummary(events);
+
+        Task.Run(() =>
+        {
+            var matched = AuditEventFilter.ApplyTimelineFilter(
+                events,
+                filters.EmployeeMonitoring,
+                filters.HideNetworkSnapshots,
+                filters.HideProcessEvents,
+                filters.HideTamperEvents).ToList();
+
+            var rows = matched
+                .Take(AuditEventFilter.TimelineDisplayLimit)
+                .Select(x => new TimelineRow(
+                    x.TimestampUtc.ToString("u"),
+                    x.Category,
+                    x.Action,
+                    AuditEventFormatter.Describe(x),
+                    x.User ?? string.Empty,
+                    x.Severity))
+                .ToList();
+
+            var status = AuditEventFilter.FormatTimelineFilterStatus(
+                rows.Count,
+                matched.Count,
+                events.Count);
+            var monitoringText = AuditEventFilter.FormatMonitoringSummary(summary, matched.Count);
+
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (generation != _timelineFilterGeneration)
+                {
+                    return;
+                }
+
+                TimelineGrid.ItemsSource = null;
+                TimelineGrid.ItemsSource = rows;
+                TimelineFilterStatusText.Text = status;
+                MonitoringSummaryText.Text = monitoringText;
+            });
+        });
+    }
+
+    private void TimelineFilter_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        RefreshTimelineGrid(_store.GetEvents());
     }
 
     private void RefreshLogs_Click(object sender, RoutedEventArgs e) => RefreshLogs(silent: false);
@@ -220,4 +287,18 @@ public partial class MainWindow : Window
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 
     private void SetStatus(string text) => StatusText.Text = text;
+
+    private sealed record TimelineFilterOptions(
+        bool EmployeeMonitoring,
+        bool HideNetworkSnapshots,
+        bool HideProcessEvents,
+        bool HideTamperEvents);
+
+    private sealed record TimelineRow(
+        string TimestampUtc,
+        string Category,
+        string Action,
+        string Description,
+        string User,
+        string Severity);
 }

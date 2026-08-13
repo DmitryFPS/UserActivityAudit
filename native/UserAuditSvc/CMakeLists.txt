@@ -21,6 +21,7 @@ add_executable(UserAudit
     src/session_collector.cpp
     src/process_collector.cpp
     src/foreground_collector.cpp
+    src/session_notification_collector.cpp
     src/pipe_server.cpp
     src/pipe_client.cpp
     src/session_agent_manager.cpp

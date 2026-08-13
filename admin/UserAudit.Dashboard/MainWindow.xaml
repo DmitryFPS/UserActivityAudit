@@ -71,19 +71,61 @@
                         </Border>
                     </WrapPanel>
                     <Button Content="Обновить логи" Width="160" HorizontalAlignment="Left" Click="RefreshLogs_Click"/>
+                    <TextBlock Text="Мониторинг (без шума)" FontWeight="SemiBold" Margin="0,16,0,4"/>
+                    <TextBlock x:Name="MonitoringSummaryText" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <TextBlock Text="Все категории" FontWeight="SemiBold" Margin="0,8,0,4"/>
+                    <TextBlock x:Name="CategoryBreakdownText" TextWrapping="Wrap"/>
                 </StackPanel>
             </TabItem>
 
             <TabItem Header="Хронология">
-                <DataGrid x:Name="TimelineGrid" IsReadOnly="True" AutoGenerateColumns="False">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Время (UTC)" Binding="{Binding TimestampUtc}" Width="160"/>
-                        <DataGridTextColumn Header="Категория" Binding="{Binding Category}" Width="100"/>
-                        <DataGridTextColumn Header="Действие" Binding="{Binding Action}" Width="140"/>
-                        <DataGridTextColumn Header="Важность" Binding="{Binding Severity}" Width="90"/>
-                        <DataGridTextColumn Header="Источник" Binding="{Binding SourceFile}" Width="*"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="4,4,4,8">
+                        <CheckBox x:Name="EmployeeMonitoringCheck"
+                                  Content="Мониторинг сотрудника (окна, сессии, USB, файлы)"
+                                  IsChecked="True"
+                                  FontWeight="SemiBold"
+                                  Checked="TimelineFilter_Changed"
+                                  Unchecked="TimelineFilter_Changed"/>
+                        <CheckBox x:Name="HideNetworkSnapshotsCheck"
+                                  Content="Скрыть снимки сети"
+                                  IsChecked="True"
+                                  Margin="16,4,0,0"
+                                  Checked="TimelineFilter_Changed"
+                                  Unchecked="TimelineFilter_Changed"/>
+                        <CheckBox x:Name="HideProcessCheck"
+                                  Content="Скрыть процессы (ETW-шум)"
+                                  IsChecked="True"
+                                  Margin="16,4,0,0"
+                                  Checked="TimelineFilter_Changed"
+                                  Unchecked="TimelineFilter_Changed"/>
+                        <CheckBox x:Name="HideTamperCheck"
+                                  Content="Скрыть tamper (смотреть на вкладке «Тревоги»)"
+                                  IsChecked="True"
+                                  Margin="16,4,0,0"
+                                  Checked="TimelineFilter_Changed"
+                                  Unchecked="TimelineFilter_Changed"/>
+                        <TextBlock x:Name="TimelineFilterStatusText"
+                                   Margin="0,8,0,0"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <DataGrid x:Name="TimelineGrid"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              EnableRowVirtualization="True"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Время (UTC)" Binding="{Binding TimestampUtc}" Width="150"/>
+                            <DataGridTextColumn Header="Категория" Binding="{Binding Category}" Width="90"/>
+                            <DataGridTextColumn Header="Действие" Binding="{Binding Action}" Width="100"/>
+                            <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*"/>
+                            <DataGridTextColumn Header="Пользователь" Binding="{Binding User}" Width="140"/>
+                            <DataGridTextColumn Header="Важность" Binding="{Binding Severity}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
             </TabItem>
 
             <TabItem Header="Тревоги">

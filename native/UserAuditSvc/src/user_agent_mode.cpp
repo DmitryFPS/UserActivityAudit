@@ -5,6 +5,7 @@
 #include "useraudit/foreground_collector.hpp"
 #include "useraudit/paths.hpp"
 #include "useraudit/pipe_client.hpp"
+#include "useraudit/session_notification_collector.hpp"
 
 #include <windows.h>
 #include <wtsapi32.h>
@@ -44,10 +45,30 @@ bool has_flag(int argc, wchar_t** argv, const wchar_t* flag) {
     return false;
 }
 
+bool attach_process_to_interactive_window_station() {
+    HWINSTA window_station =
+        OpenWindowStationW(L"winsta0", FALSE, WINSTA_ENUMERATE | WINSTA_READATTRIBUTES);
+    if (window_station == nullptr) {
+        return false;
+    }
+
+    if (!SetProcessWindowStation(window_station)) {
+        CloseWindowStation(window_station);
+        return false;
+    }
+
+    CloseWindowStation(window_station);
+    return true;
+}
+
 }  // namespace
 
 int run_user_agent_mode(int argc, wchar_t** argv) {
     const unsigned long session_id = parse_session_id(argc, argv);
+
+    if (!attach_process_to_interactive_window_station()) {
+        OutputDebugStringW(L"[UserAudit] User-agent failed to attach to winsta0.\n");
+    }
 
     ConfigManager config;
     config.load();
@@ -68,6 +89,11 @@ int run_user_agent_mode(int argc, wchar_t** argv) {
         return 1;
     }
 
+    SessionNotificationCollector session_notify(pipe, hostname, session_id);
+    if (!session_notify.start()) {
+        OutputDebugStringW(L"[UserAudit] SessionNotificationCollector failed to start.\n");
+    }
+
     ClipboardCollector clipboard(pipe, hostname, config.clipboard_poll_sec());
     if (enable_clipboard) {
         clipboard.start();
@@ -79,6 +105,7 @@ int run_user_agent_mode(int argc, wchar_t** argv) {
 
     volatile bool stop = false;
     foreground.set_stop_flag(&stop);
+    session_notify.set_stop_flag(&stop);
     if (enable_clipboard) {
         clipboard.set_stop_flag(&stop);
     }
@@ -88,6 +115,7 @@ int run_user_agent_mode(int argc, wchar_t** argv) {
     }
 
     clipboard.stop();
+    session_notify.stop();
     foreground.stop();
     pipe.disconnect();
     return 0;

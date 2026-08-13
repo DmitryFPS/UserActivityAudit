@@ -37,7 +37,7 @@
 |------|----------|
 | `profile` | `auto` / `low` / `standard` / `full` |
 | `host_id` | Имя в логах (пилот: инв. номер) |
-| `server.ingest_url` | `""` = без сервера |
+| `server.ingest_url` | Должен быть `""` (выгрузка отключена) |
 | `collectors.*` | Включение модулей |
 
 После изменения:
@@ -80,13 +80,6 @@ UserAudit.exe --decrypt --date 2026-08-12 --verify
 ```
 
 Критерии: `svc=RUNNING`, `ram_mb_max` ≤ 15, `decrypt=ok`.
-
----
-
-## 7. Центральный сервер (опционально)
-
-Каталог `server/` — ingest, portal, escrow. Для автономного режима **не устанавливать**.  
-Upload: `"ingest_url": "https://..."` в config.json.
 
 ---
 

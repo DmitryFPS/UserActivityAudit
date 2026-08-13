@@ -25,6 +25,8 @@ public:
     bool write(const AuditEvent& event) override;
 
 private:
+    bool try_write_payload(const std::string& json);
+
     HANDLE pipe_ = INVALID_HANDLE_VALUE;
 };
 

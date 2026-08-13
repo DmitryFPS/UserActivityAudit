@@ -1,6 +1,0 @@
-@UserAudit.Ingest_HostAddress = http://localhost:5158
-
-GET {{UserAudit.Ingest_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

@@ -72,6 +72,21 @@ if (-not (Test-Path $agentExe)) {
     throw "UserAudit.exe not found: $agentExe"
 }
 
+Write-Step 'Stop previous service'
+$installedAgent = Join-Path $InstallDir 'UserAudit.exe'
+if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
+    Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+    Get-Process UserAudit -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 3
+    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if ($svc -and $svc.Status -ne 'Stopped') {
+        sc.exe stop $ServiceName | Out-Null
+        Start-Sleep -Seconds 3
+    }
+    sc.exe delete $ServiceName | Out-Null
+    Start-Sleep -Seconds 2
+}
+
 Write-Step 'Copy binaries'
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 $nativeRelease = Join-Path $RepoRoot 'build\native'
@@ -86,21 +101,6 @@ foreach ($pair in $copyMap.GetEnumerator()) {
         throw "Missing $($pair.Key): $($pair.Value). Build native Release first."
     }
     Copy-Item -Force $pair.Value (Join-Path $InstallDir $pair.Key)
-}
-
-Write-Step 'Stop previous service'
-$installedAgent = Join-Path $InstallDir 'UserAudit.exe'
-if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
-    Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
-    Get-Process UserAudit -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 3
-    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-    if ($svc -and $svc.Status -ne 'Stopped') {
-        sc.exe stop $ServiceName | Out-Null
-        Start-Sleep -Seconds 3
-    }
-    sc.exe delete $ServiceName | Out-Null
-    Start-Sleep -Seconds 2
 }
 
 Write-Step 'ProgramData config'
@@ -135,6 +135,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 sc.exe config $ServiceName start= auto | Out-Null
 
+Write-Step 'Enable lock/unlock audit (Security 4800/4801 backup)'
+# Primary lock/unlock source is WTS in user-agent; this enables Security log fallback.
+$auditGuid = '{0CCE922B-69AE-11D9-BED3-505054503030}'
+auditpol /set /subcategory:$auditGuid /success:enable 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning 'auditpol failed — lock/unlock still work via WTS user-agent.'
+}
+
 Write-Step 'Start service'
 sc.exe start $ServiceName | Out-Null
 $running = $false
@@ -159,9 +167,11 @@ while ((Get-ChildItem $logDir -Filter '*.jsonl.enc' -ErrorAction SilentlyContinu
     }
     Start-Sleep -Seconds 2
 }
-& $installedAgent --decrypt --verify *> $null
-if ($LASTEXITCODE -ne 0) {
-    throw "--decrypt --verify exit code $LASTEXITCODE"
+$verify = Start-Process -FilePath $installedAgent -ArgumentList '--decrypt', '--verify' -Wait -PassThru `
+    -WindowStyle Hidden -RedirectStandardOutput ([System.IO.Path]::GetTempFileName()) `
+    -RedirectStandardError ([System.IO.Path]::GetTempFileName())
+if ($verify.ExitCode -ne 0) {
+    throw "--decrypt --verify exit code $($verify.ExitCode)"
 }
 
 if (-not $SkipSmoke) {

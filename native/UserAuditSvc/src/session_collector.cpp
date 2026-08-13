@@ -159,7 +159,16 @@ bool SessionCollector::handle_event(EVT_HANDLE event_record) {
 
     const std::string domain = wide_to_utf8(extract_data_value(xml, L"TargetDomainName"));
     const std::string username = wide_to_utf8(extract_data_value(xml, L"TargetUserName"));
-    if (!domain.empty() && !username.empty()) {
+    const std::string subject_domain = wide_to_utf8(extract_data_value(xml, L"SubjectDomainName"));
+    const std::string subject_user = wide_to_utf8(extract_data_value(xml, L"SubjectUserName"));
+
+    if (event_id == 4800 || event_id == 4801 || event_id == 4634 || event_id == 4647) {
+        if (!subject_domain.empty() && !subject_user.empty()) {
+            event.user = subject_domain + "\\" + subject_user;
+        } else if (!subject_user.empty()) {
+            event.user = subject_user;
+        }
+    } else if (!domain.empty() && !username.empty()) {
         event.user = domain + "\\" + username;
     } else if (!username.empty()) {
         event.user = username;

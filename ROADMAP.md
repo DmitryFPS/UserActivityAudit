@@ -1,6 +1,6 @@
 # UserActivityAudit — Дорожная карта разработки
 
-Коммерческая версия 1.0. **Основной режим развёртывания:** автономный агент на каждом ПК + WPF-анализатор ([docs/STANDALONE.md](docs/STANDALONE.md)). Серверный стек (фаза 6) — опционально для парка машин.
+Коммерческая версия 1.0. **Единственный режим развёртывания:** автономный агент на каждом ПК + WPF-анализатор ([docs/STANDALONE.md](docs/STANDALONE.md)).
 
 Пилотный парк: 15 ноутбуков (поддержка 2 ГБ ОЗУ).
 
@@ -14,11 +14,10 @@
 
 | Результат | Статус |
 |-----------|--------|
-| Структура каталогов (native/server/admin/installer) | ✅ |
+| Структура каталогов (native/admin/installer) | ✅ |
 | CMake + каркас UserAuditSvc | ✅ |
 | ANALYTICS.md, ROADMAP.md, ARCHITECTURE.md | ✅ |
 | Правило Cursor commercial-mode | ✅ |
-| Заглушка docker-compose | ✅ |
 | Git init | ✅ |
 | Каркас GitHub Actions | ✅ |
 
@@ -43,7 +42,7 @@
 | UsbCollector | WMI Win32_VolumeChangeEvent | ✅ Спринт 3 |
 
 ### Критерии приёмки
-- [ ] Служба работает как LocalSystem, переживает перезагрузку ([docs/TESTING.md](docs/TESTING.md)) — reboot не проверялся в этой сессии
+- [x] Служба работает как LocalSystem, переживает перезагрузку ([docs/TESTING.md](docs/TESTING.md)) — **ARM1 2026-08-13: verify-reboot.ps1 PASS**
 - [x] Вход → событие `session.login` (SessionCollector)
 - [x] notepad.exe → `process.start` + `window.focus` (через user-agent)
 - [x] USB → `usb.insert` с VID/PID при наличии
@@ -96,20 +95,20 @@
 
 ## Фаза 4 — Базовая защита и выгрузка ✅
 
-**Цель:** ACL, watchdog, детект tamper, клиент выгрузки на сервер.
+**Цель:** ACL, watchdog, детект tamper. Upload в агенте отключён (`ingest_url: ""`).
 
 | Модуль | Примечание |
 |--------|------------|
 | AclGuard | ACL ProgramData, периодическая самопроверка |
 | Watchdog | `UserAuditWatchdog.exe` + SCM recovery |
 | TamperCollector | Security/System events + локальный deny log |
-| UploadClient | Пакетная выгрузка TLS (WinHTTP); mock → outbox |
+| UploadClient | Отключён по умолчанию; mock/outbox — только для dev-тестов |
 
 ### Критерии приёмки
 - [x] Обычный пользователь не может удалить `%ProgramData%\UserAudit\` — DENY ACL + exit 1 при попытке delete logs
 - [x] Попытка tamper → событие `tamper.*` (TamperCollector + AclGuard)
 - [x] Watchdog + SCM recovery перезапускают службу за 60 сек
-- [x] Upload отключён по умолчанию (`ingest_url: ""`); mock/HTTP — опционально
+- [x] Upload отключён (`ingest_url: ""`); центральный сервер не используется
 
 ---
 
@@ -133,24 +132,9 @@
 
 ---
 
-## Фаза 6 — Серверный стек ✅
+## Фаза 6 — Серверный стек (удалена)
 
-**Цель:** ingest, escrow ключей, alerts, веб-портал.
-
-| Сервис | Назначение | Статус |
-|--------|------------|--------|
-| UserAudit.Ingest | upload логов и событий | ✅ |
-| UserAudit.Escrow | wrap/unwrap DEK, ротация | ✅ |
-| UserAudit.Alerts | Движок правил, уведомления | ✅ |
-| UserAudit.Portal | Список хостов, timeline, admin UI | ✅ |
-
-Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — hardening после пилота.
-
-### Критерии приёмки
-- [x] Docker compose поднимает все сервисы
-- [ ] Upload агента → видно в портале за 5 мин (E2E на пилоте)
-- [x] Escrow: DEK unwrap ролью admin (`X-UserAudit-Admin-Key`)
-- [x] Alert на tamper-событие (агент → `POST /ingest/events`, AlertEngine)
+**Статус:** снята с дорожной карты и **удалена из репозитория** (2026-08-13). Не восстанавливать. Продукт — только standalone.
 
 ---
 
@@ -163,7 +147,7 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 | LogImporter | Зашифрованный JSONL → domain models | ✅ |
 | Dashboard | Timeline, хосты, alerts (WPF) | ✅ |
 | Reports | Excel/PDF (ClosedXML + QuestPDF) | ✅ |
-| DecryptTool | Escrow + локальный DEK | ✅ |
+| DecryptTool | Локальный DEK (DPAPI) | ✅ |
 
 Запуск: `dotnet run --project admin/UserAudit.Dashboard`
 
@@ -210,7 +194,7 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 
 ### Критерии приёмки
 - [x] Silent install (`msiexec /quiet`)
-- [ ] Reboot — `verify-reboot.ps1` (выполняет администратор)
+- [x] Reboot — `verify-reboot.ps1` (**ARM1 2026-08-13 PASS**: RUNNING, user-agent, HMAC OK, RAM 14.7 МБ)
 - [x] deploy.ps1 / build-dist
 - [x] GPO задокументированы
 
@@ -228,8 +212,9 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 | 24h soak | ⏳ скрипт готов, сбор CSV на пилоте |
 
 ### Критерии RC1 (автономный пилот)
-- [x] Фазы 0–7, 9 (кроме reboot)
-- [ ] Reboot + soak 24h на эталоне
+- [x] Фазы 0–7, 9 (reboot ✅ ARM1)
+- [x] Reboot на эталоне ARM1 (2026-08-13)
+- [ ] Soak 24h на эталоне (ARM1: ~12ч до reboot, продолжение после reboot)
 - [x] Пилотный пакет в `dist/`
 - [x] Release notes
 - [ ] Minifilter .sys (опционально, см. DRIVER-BUILD.md)
@@ -244,4 +229,4 @@ Dev: HTTP + PostgreSQL через `docker compose up -d --build`. mTLS — harde
 2. Чекбоксы в ROADMAP обновлены
 3. Краткий итог: сделано / дальше
 
-**Текущая фаза:** **RC1 + L3 Forensic** (USB-триггер, evidence pack) → подпись EV + reboot-тест → rollout 15 ноутбуков
+**Текущая фаза:** **RC1 + L3 Forensic** — reboot ✅ (ARM1) → soak 24h → EV-подпись → rollout 15 ноутбуков

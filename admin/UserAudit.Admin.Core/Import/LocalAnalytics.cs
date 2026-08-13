@@ -32,10 +32,26 @@ public static class LocalAnalytics
                 x.TimestampUtc,
                 x.Host,
                 $"{x.Category}.{x.Action}".ToLowerInvariant(),
-                $"[{x.Host}] {x.Category}.{x.Action}",
+                BuildAlertTitle(x),
                 x.Severity,
-                x.Data.TryGetValue("detail", out var d) ? d : null))
+                x.Data.TryGetValue("detail", out var d) ? d :
+                    x.Data.TryGetValue("reason", out var r) ? r : null))
             .ToList();
+
+    private static string BuildAlertTitle(AuditEventModel x)
+    {
+        if (x.Data.TryGetValue("reason", out var reason) && !string.IsNullOrWhiteSpace(reason))
+        {
+            return $"[{x.Host}] {reason}";
+        }
+
+        if (x.Data.TryGetValue("detail", out var detail) && !string.IsNullOrWhiteSpace(detail))
+        {
+            return $"[{x.Host}] {detail}";
+        }
+
+        return $"[{x.Host}] {x.Category}.{x.Action}";
+    }
 }
 
 public sealed record LocalHostRow(

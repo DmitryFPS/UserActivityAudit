@@ -1,6 +1,6 @@
 # UserActivityAudit — Архитектура системы
 
-Коммерческая версия 1.0. Полная спецификация — в [ANALYTICS.md](../ANALYTICS.md).
+Коммерческая версия 1.0 — **автономный режим**. Полная спецификация — в [ANALYTICS.md](../ANALYTICS.md).
 
 ---
 
@@ -8,7 +8,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         КЛИЕНТ (каждый ноутбук)                          │
+│                    КЛИЕНТ + АНАЛИЗ (каждый ноутбук)                      │
 │  ┌──────────────┐   ┌──────────────────────────────────────────────┐   │
 │  │ UserAudit.sys│   │ UserAudit.exe (LocalSystem)                  │   │
 │  │ (minifilter) │◄──│ L1/L2 + pipe; запускает --user-agent/сессию  │   │
@@ -19,24 +19,13 @@
 │         │    Зашифрованный JSONL (%ProgramData%\UserAudit\logs\)         │
 │         │         │                                                      │
 │  UserAuditWatchdog.exe (монитор + перезапуск)                           │
-└─────────────────┼───────────────────────────────────────────────────────┘
-                  │ TLS 1.3 + mTLS (пакетами)
-                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                              СЕРВЕР                                      │
-│  Ingest API ──► Log Store    Escrow Vault ──► wrap/unwrap DEK           │
-│       │              │              │                                    │
-│       └──────► Alert Engine ◄───────┘                                    │
-│                      │                                                   │
-│               Web Portal (timeline, хосты, alerts)                       │
-└─────────────────────────────────────────────────────────────────────────┘
-                  ▲
-                  │ расшифровка / отчёты
-┌─────────────────┴───────────────────────────────────────────────────────┐
-│  РАБОЧАЯ СТАНЦИЯ АДМИНА (C#)                                             │
-│  UserAudit.Dashboard │ Reports │ Forensic │ UserAuditAdmin (IT USB)     │
+│         │         │                                                      │
+│         │         ▼                                                      │
+│  UserAudit.Dashboard (WPF) — хронология, alerts, отчёты, forensic       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+
+Центрального сервера нет. Логи расшифровываются на том же ПК (DPAPI) или после экспорта DEK.
 
 ---
 
@@ -44,18 +33,13 @@
 
 ```
 UserActivityAudit/
-├── native/                 # C++20 — только клиент
+├── native/                 # C++20 — агент и драйвер
 │   ├── UserAuditSvc/       # Служба Windows + сборщики
 │   ├── UserAuditWatchdog/
 │   ├── UserAuditFilter/    # Minifilter ядра (фаза 5) → UserAudit.sys
 │   ├── UserAuditAdmin/     # IT-инструмент авторизации
 │   └── UserAuditKeygen/
-├── server/                 # .NET 10 — backend
-│   ├── UserAudit.Ingest/
-│   ├── UserAudit.Escrow/
-│   ├── UserAudit.Alerts/
-│   └── UserAudit.Portal/
-├── admin/                  # .NET 10 — инструменты оператора
+├── admin/                  # .NET 10 — WPF и отчёты
 │   ├── UserAudit.Dashboard/
 │   ├── UserAudit.Reports/
 │   ├── UserAudit.Forensic/
@@ -94,12 +78,11 @@ UserActivityAudit/
 
 | Слой | Компонент |
 |------|-----------|
-| Конфиденциальность | AES-256-GCM, DEK = TPM ⊕ USB, escrow на сервере |
-| Целостность | HMAC-цепочка, якорь на сервере |
+| Конфиденциальность | AES-256-GCM, DEK (DPAPI LocalMachine + опционально USB split) |
+| Целостность | HMAC-цепочка на диске (`chain.state`) |
 | Tamper (пользователь) | ACL + служба SYSTEM |
 | Tamper (админ) | Minifilter + IT USB Ed25519 |
 | Offline | BitLocker |
-| Транспорт | TLS 1.3 + mTLS + cert pinning |
 
 ---
 
@@ -158,7 +141,6 @@ UserAudit.exe --decrypt --date 2026-08-12 --verify
 |------|------|
 | Агент | C++20, Win32, BCrypt (CNG), ETW, WMI |
 | Драйвер | WDK, minifilter (FltMgr) |
-| Сервер | .NET 10, ASP.NET Core, Docker |
 | Админка | .NET 10, WPF |
 | CI | GitHub Actions, MSVC 2022 |
 
@@ -179,7 +161,6 @@ UserAudit.exe --decrypt --date 2026-08-12 --verify
 
 - EV-сертификат подписи кода (агент + админка)
 - Подпись драйвера Microsoft (UserAudit.sys)
-- Хост сервера (VPS или on-prem) — с фазы 6
 - IT USB с org Ed25519 key
 - BitLocker на всех пилотных ноутбуках
 

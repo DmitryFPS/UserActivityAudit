@@ -29,6 +29,43 @@ bool create_well_known_sid(WELL_KNOWN_SID_TYPE type, PSID& sid_out, std::vector<
     return true;
 }
 
+bool acl_denies_users_write(PACL acl) {
+    if (acl == nullptr) {
+        return false;
+    }
+
+    std::vector<BYTE> users_storage;
+    PSID users_sid = nullptr;
+    if (!create_well_known_sid(WinBuiltinUsersSid, users_sid, users_storage)) {
+        return false;
+    }
+
+    for (WORD i = 0; i < acl->AceCount; ++i) {
+        LPVOID ace = nullptr;
+        if (GetAce(acl, i, &ace) != TRUE || ace == nullptr) {
+            continue;
+        }
+
+        const auto* header = static_cast<ACE_HEADER*>(ace);
+        if (header->AceType != ACCESS_DENIED_ACE_TYPE) {
+            continue;
+        }
+
+        const auto* denied = static_cast<ACCESS_DENIED_ACE*>(ace);
+        const PSID ace_sid = reinterpret_cast<PSID>(const_cast<PVOID>(static_cast<const void*>(&denied->SidStart)));
+        if (!EqualSid(ace_sid, users_sid)) {
+            continue;
+        }
+
+        const ACCESS_MASK mask = denied->Mask;
+        if ((mask & (DELETE | FILE_WRITE_DATA | FILE_APPEND_DATA | WRITE_DAC | WRITE_OWNER)) != 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 }  // namespace
 
 std::wstring expected_users_deny_sddl_fragment() {
@@ -131,25 +168,15 @@ bool AclGuard::verify() const {
     const DWORD result = GetNamedSecurityInfoW(
         logs.c_str(), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &acl, &sacl,
         &descriptor);
-    if (result != ERROR_SUCCESS || descriptor == nullptr || acl == nullptr) {
+    if (result != ERROR_SUCCESS || descriptor == nullptr) {
         if (descriptor != nullptr) {
             LocalFree(descriptor);
         }
         return false;
     }
 
-    LPWSTR sddl = nullptr;
-    const bool converted =
-        ConvertSecurityDescriptorToStringSecurityDescriptorW(descriptor, SDDL_REVISION_1,
-                                                             DACL_SECURITY_INFORMATION, &sddl,
-                                                             nullptr) != FALSE;
-    const bool ok = converted && sddl != nullptr &&
-                    std::wstring(sddl).find(expected_users_deny_sddl_fragment()) !=
-                        std::wstring::npos;
+    const bool ok = acl_denies_users_write(acl);
 
-    if (sddl != nullptr) {
-        LocalFree(sddl);
-    }
     LocalFree(descriptor);
     return ok;
 }
@@ -174,8 +201,6 @@ void AclGuard::guard_thread_main() {
             OutputDebugStringW(L"[UserAuditSvc] AclGuard verify failed — reapplying ACL\n");
             if (!apply()) {
                 emit_tamper_event("acl_reapply_failed");
-            } else {
-                emit_tamper_event("acl_tamper_detected");
             }
         }
 

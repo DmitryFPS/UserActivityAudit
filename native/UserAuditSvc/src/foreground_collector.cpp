@@ -58,6 +58,34 @@ std::wstring query_window_title(HWND hwnd) {
     return title;
 }
 
+HWND resolve_active_window() {
+    GUITHREADINFO gui{};
+    gui.cbSize = sizeof(gui);
+    if (GetGUIThreadInfo(0, &gui) && gui.hwndActive != nullptr) {
+        return gui.hwndActive;
+    }
+    return GetForegroundWindow();
+}
+
+bool attach_poll_thread_to_interactive_desktop() {
+    HDESK desktop = OpenDesktopW(L"default", 0, FALSE,
+                                 DESKTOP_READOBJECTS | DESKTOP_JOURNALRECORD);
+    if (desktop == nullptr) {
+        desktop = OpenInputDesktop(0, FALSE, DESKTOP_READOBJECTS);
+    }
+    if (desktop == nullptr) {
+        return false;
+    }
+
+    if (!SetThreadDesktop(desktop)) {
+        CloseDesktop(desktop);
+        return false;
+    }
+
+    CloseDesktop(desktop);
+    return true;
+}
+
 }  // namespace
 
 ForegroundCollector::ForegroundCollector(EventSink& sink, std::string hostname,
@@ -72,7 +100,7 @@ ForegroundCollector::~ForegroundCollector() {
 }
 
 bool ForegroundCollector::emit_focus_if_changed() {
-    const HWND hwnd = GetForegroundWindow();
+    const HWND hwnd = resolve_active_window();
     if (hwnd == nullptr) {
         return false;
     }
@@ -118,6 +146,10 @@ bool ForegroundCollector::emit_focus_if_changed() {
 }
 
 void ForegroundCollector::poll_thread_main() {
+    if (!attach_poll_thread_to_interactive_desktop()) {
+        OutputDebugStringW(L"[UserAudit] ForegroundCollector failed to attach to desktop.\n");
+    }
+
     while (running_.load()) {
         if (stop_flag_ != nullptr && *stop_flag_) {
             break;

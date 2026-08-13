@@ -196,6 +196,15 @@ void ProcessCollector::trace_thread_main() {
     properties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
     properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 
+    // Drop a stale session left by a crashed service instance.
+    ControlTraceW(0, kSessionName, properties, EVENT_TRACE_CONTROL_STOP);
+    ZeroMemory(properties, sizeof(EVENT_TRACE_PROPERTIES));
+    properties->Wnode.BufferSize = static_cast<ULONG>(buffer_size);
+    properties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
+    properties->Wnode.ClientContext = 1;
+    properties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
+    properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+
     CONTROLTRACE_ID session_id{};
     if (StartTraceW(&session_id, kSessionName, properties) != ERROR_SUCCESS) {
         OutputDebugStringW(L"[UserAuditSvc] ProcessCollector StartTrace failed\n");

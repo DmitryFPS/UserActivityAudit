@@ -130,6 +130,11 @@ bool TamperCollector::handle_security_event(EVT_HANDLE event_record) {
         return false;
     }
 
+    const std::wstring_view keywords = extract_xml_value(xml, L"Keywords");
+    if (keywords.find(L"8010000000000000") == std::wstring_view::npos) {
+        return false;
+    }
+
     const std::wstring data_root = resolve_data_root().wstring();
     const std::wstring logs_root = resolve_log_directory().wstring();
     if (xml.find(data_root) == std::wstring::npos && xml.find(logs_root) == std::wstring::npos &&

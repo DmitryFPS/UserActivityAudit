@@ -19,7 +19,7 @@ ctest --test-dir build/native -C Debug --output-on-failure
 | `test_log_crypto` | AES-256-GCM roundtrip |
 | `test_hash_chain` | HMAC-цепочка и детект подмены |
 | `test_config_manager` | config.json, профили Low/Standard/Full |
-| `test_upload_client` | Парсинг server/upload, mock vs HTTP |
+| `test_upload_client` | Парсинг upload config; mock/outbox (dev only, ingest отключён) |
 
 ---
 
@@ -196,20 +196,9 @@ sc stop UserAuditSvc
 
 Ожидание: `"cat":"tamper"` (например `service_stop` или `attempt_denied`).
 
-### 8.4 Upload (опционально, только с сервером)
+### 8.4 Upload (отключён)
 
-По умолчанию `config.json` содержит `"ingest_url": ""` — **выгрузка отключена** (автономный режим).
-
-Для центрального сервера укажите URL ingest API:
-
-```json
-"server": {
-  "ingest_url": "https://ingest.example.com/api/v1/events",
-  "upload_interval_minutes": 15
-}
-```
-
-Файлы попадают в outbox и отправляются по расписанию. Mock-режим (`.../mock`) копирует в `C:\ProgramData\UserAudit\outbox\`.
+`config.json` должен содержать `"ingest_url": ""` — **выгрузка не поддерживается** в v1.0 (standalone). Поле оставлено в конфиге для совместимости; центрального сервера нет.
 
 ---
 
